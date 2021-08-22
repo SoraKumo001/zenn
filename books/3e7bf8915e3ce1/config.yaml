@@ -6,3 +6,4 @@ topics: ["nextjs", "nodejs", "react", "typescript", "web"]
 published: false
 price: 0
 toc_depth: 2
+allow_override: true
