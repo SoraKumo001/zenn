@@ -1,0 +1,56 @@
+{
+  "title": "React手抜きテクニック集",
+  "closed": false,
+  "archived": false,
+  "created_at": "2021-05-01",
+  "comments": [
+    {
+      "author": "sora_kumo",
+      "created_at": "2021-05-02",
+      "body_markdown": "# formやinputを非制御で最も簡単に使う方法\n\nuseStateやuseRefを使わずに、最小限の記述でフォームに入力したデータをとることが出来ます\n\nReactの公式ではvalueプロパティを使って制御する形を推奨しています\nしかしvalueに対応するsetStateが上位の層にいると、テキストを入力するごとに下位コンポーネントの再評価が行われ重力地獄に落ちることがあるので、特段の理由が無ければ私は非制御を推奨します\n重力地獄はmemo化で対処は出来るといえば出来るのですが、それなら最初から余計な動きをさせないのが一番です\n\nまた、リアルタイムなバリデーションチェックはsetStateに関係なく、onChangeイベントで入力内容のチェックが可能です\n\n```tsx\nconst Form = ({ onSubmit }: { onSubmit: (value: string) => void }) => (\n  <form\n    onSubmit={(e) => {\n      e.preventDefault();\n      const a = e.target['a'].value;\n      const b = e.target['b'].value;\n      onSubmit(JSON.stringify({ a, b }));\n    }}\n  >\n    <input name=\"a\" />\n    <input name=\"b\" />\n    <button>実行</button>\n  </form>\n);\n\nconst App = () => {\n  const [value, setValue] = useState<string>(null);\n  return (\n    <>\n      <Form onSubmit={(v) => setValue(v)} />\n      <div>{value}</div>\n    </>\n  );\n};\n```\n@[codepen](https://codepen.io/sorakumo001-the-encoder/pen/wvgLbMM?editors=0010)\n",
+      "body_updated_at": "2021-05-03"
+    },
+    {
+      "author": "sora_kumo",
+      "created_at": "2021-05-02",
+      "body_markdown": "# 非制御だけどinputの内容を外から制御する\n\n一番最後のinputをユーザ入力は自由に出来るようにしつつ、ラジオボタンが切り替わったときだけ内容が書き換わります\n\ninputにdefaultValueを使った場合、通常だと後から内容を書き換えることは出来ません\nここで登場するのがkeyです\n\nこれを書き換えることによってinputが作り直しになるので、defaultValueが再評価されることになります\nkeyはループ以外にも用途が存在するわけです\n\n```tsx\nconst App = () => {\n  const [value, setValue] = useState('default');\n  return (\n    <>\n      <label>\n        <input name=\"a\" type=\"radio\" onChange={() => setValue('あいうえお')} />\n        あいうえお\n      </label>\n      <label>\n        <input name=\"a\" type=\"radio\" onChange={() => setValue('かきくけこ')} />\n        かきくけこ\n      </label>\n      {/* ↓の内容を書き換える */}\n      <input key={value} defaultValue={value} />\n    </>\n  );\n};\n```\n\n@[codepen](https://codepen.io/sorakumo001-the-encoder/pen/OJWeYQR?editors=0010)\n",
+      "body_updated_at": "2021-05-02"
+    },
+    {
+      "author": "sora_kumo",
+      "created_at": "2021-05-02",
+      "body_markdown": "# プルダウンメニュー的なイベント処理\n\nプルダウンメニュー的なコンポーネントを作成したとき、面倒になるのが他にフォーカスが移ったときの非表示処理です\nこれを最小限のコード量で記述してみます\n\n対象ノードにフォーカスを与えてblurイベントで非表示にするのはよくある流れなのですが、useRefやuseEffectを使わずfocus()を実行しています\nrefはDOM作成時にインスタンスを渡してくれるので、それを直接利用します\n\n```tsx\nconst App = () => {\n  const [visible, setVisible] = useState(false);\n  return (\n    <>\n      <button onClick={() => setVisible(true)}>表示</button>\n      {visible && (\n        <div\n          style={{ border: 'solid' }}\n          tabIndex={0}\n          ref={(e) => e?.focus()}\n          onBlur={() => setVisible(false)}\n        >\n          表示内容\n        </div>\n      )}\n    </>\n  );\n};\n```\n@[codepen](https://codepen.io/sorakumo001-the-encoder/pen/OJWeYvR?editors=0010)\n",
+      "body_updated_at": "2021-05-17"
+    },
+    {
+      "author": "sora_kumo",
+      "created_at": "2021-05-02",
+      "body_markdown": "# hooksとデータ保存領域\n\n「カウント」を押すとサイレントに押した回数を計測し、「結果」を押すとコンソールに押した回数が出力されます\n\nクラスコンポーネントと違って作業データを保存するにはhookを使うことになるのですが、コンポーネントの再評価が必要なもの以外にuseStateは使ってはいけません\nデータを入れ替えるごとにコンポーネントの処理が再実行されてしまいます\n\n今回のように情報を記憶しておけば良いだけのデータはuseRefでデータ領域を作りましょう\n\n```ts\nconst App = () => {\n  const count = useRef(0);\n  return (\n    <>\n      <button onClick={() => count.current++}>カウント</button>\n      <button onClick={() => alert(count.current)}>結果</button>\n    </>\n  );\n};\n```\n\n@[codepen](https://codepen.io/sorakumo001-the-encoder/pen/MWJMdVV?editors=0010)\n",
+      "body_updated_at": "2021-05-02"
+    },
+    {
+      "author": "sora_kumo",
+      "created_at": "2021-05-02",
+      "body_markdown": "# Hooks側で仮想DOMとデータ両方の制御を行う\n\n子コンポーネントのボタンを押すと親コンポーネントで表示しているカウントが増えます\nこの動作を普通に書くと、親にカウントの増加を通知するためにコンポーネントからイベントを作成する流れになります\n親はそのイベントを受け取り、useStateで作ったdispatchにデータを設定しなければなりません\n\n今回の書き方だと、それらのロジックをhook側に閉じ込めて、親コンポーネントは送られてきた値をそのまま使うだけとなり、記述は最小限です\n\n```tsx\nconst useCount = () => {\n  const [count, setCount] = useState(0);\n  const Counter = useMemo(\n    () => () => <button onClick={() => setCount((v) => v + 1)}>ボタン</button>,\n    []\n  );\n  return { count, Counter };\n};\n\nconst App = () => {\n  const { count, Counter } = useCount();\n  return (\n    <>\n      <Counter />\n      {count}\n    </>\n  );\n};\n```\n\n@[codepen](https://codepen.io/sorakumo001-the-encoder/pen/jOyjgWg?editors=0010)\n",
+      "body_updated_at": "2021-05-03"
+    },
+    {
+      "author": "sora_kumo",
+      "created_at": "2021-05-02",
+      "body_markdown": "# useStateで重要なのはデータ自体では無くDispatchの方\n\nHooksを利用するとき、useStateを使ったことが無いという人はまずいないと思います\nしかし何も考えずに使っていると、本質が分からずになんとなくそう書いているという状態になります\n\nuseStateでstateを扱うためのhookなので、重要なのは**値**では無く、いつもは**set何とか**と名付けているDispatchの方なのです\n\n値を格納するだけならuseRefで領域を作って格納しても良いのです\nただ、それだと値の変更が通知されず関数が再評価されないので、dispatchを呼び出す必要があるのです\nぶっちゃけてしまえば、データ領域を全てrefにして、useStateは一個だけという構成でもコンポーネントは成り立ちます\n\n```tsx:\nconst App = () => {\n  const [, dispatch] = useState<{}>();\n  const count = useRef(0);\n  return (\n    <div\n      onClick={() => {\n        count.current++;\n        dispatch({});\n      }}\n    >\n      {count.current}\n    </div>\n  );\n};\n```\n@[codepen](https://codepen.io/sorakumo001-the-encoder/pen/KKajOQd?editors=0010)\n",
+      "body_updated_at": "2021-05-03"
+    },
+    {
+      "author": "sora_kumo",
+      "created_at": "2021-05-03",
+      "body_markdown": "# useStateのデータ取得の非同期化\n\n特定のコールバック環境下ではuseStateの値が更新されず、正確な情報を取得するためにはdispatchを呼び出して値を取得する必要があります\n\n利用する値が単体の時は単純に書けるので問題ないのですが、複数のデータを同時に利用したい場合にdispatchの中でdispatchを呼び出したりと、記述する処理が複雑になります\n\n今回のコードはそれを回避するためにPromiseを使ってデータを取り出す処理になります\n\n値を取り出す部分はPromise.allを使った方が適切ですが、今回は分かりやすく書くため使っていません\n\nちなみにtsxだと`<T>`がエラーとなるので`<T,>`と書かなければなりません\n\n```tsx:\nconst getStateValue = <T,>(dispatch: React.Dispatch<React.SetStateAction<T>>): Promise<T> => {\n  return new Promise<T>((resolve) => {\n    dispatch((v) => {\n      resolve(v);\n      return v;\n    });\n  });\n};\n\nconst App = () => {\n  const [, setA] = useState('');\n  const [, setB] = useState('');\n  const [c, setC] = useState('');\n  const handleClick = useCallback(async () => {\n    setC((await getStateValue(setA)) + (await getStateValue(setB)));\n  }, [/*あえてここは使わず、関数の再構築はしない*/]);\n  return (\n    <>\n      <input onChange={(e) => setA(e.target.value)} />\n      <input onChange={(e) => setB(e.target.value)} />\n      <button onClick={handleClick}>設定</button>\n      <div>{c}</div>\n    </>\n  );\n};\n```\n@[codepen](https://codepen.io/sorakumo001-the-encoder/pen/QWdeMge?editors=0010)\n",
+      "body_updated_at": "2021-05-03"
+    },
+    {
+      "author": "sora_kumo",
+      "created_at": "2021-05-03",
+      "body_markdown": "# tsxでコンポーネントにgenericsを渡す方法\n\nなんか気持ち悪いですが、タグの中で`<>`を使います\n\n```tsx:\nconst Test = <T,>({ value }: { value: T }) => <div>{value}</div>;\n\nconst App = () => {\n  return (\n    <>\n      <Test<string> value=\"abc\" />\n    </>\n  );\n};\n```\n@[codepen](https://codepen.io/sorakumo001-the-encoder/pen/BapXdxe?editors=0010)\n",
+      "body_updated_at": "2021-05-03"
+    }
+  ]
+}

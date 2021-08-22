@@ -1,0 +1,8 @@
+title: "Next.js(11系)によるReact+TypeScript入門"
+summary: |-
+  Next.js(11系)を使用したReact+TypeScript入門
+  開発環境の導入からTSX(JSX)の基礎、react-hooksの使い方、UIの構築からstate管理まで
+topics: ["nextjs", "nodejs", "react", "typescript", "web"]
+published: false
+price: 0
+toc_depth: 2
