@@ -1,7 +1,8 @@
 {
   "name": "zenn",
   "scripts": {
-    "new": "new:article"
+    "start": "zenn",
+    "new": "zenn new:article"
   },
   "version": "1.0.0",
   "main": "index.js",
