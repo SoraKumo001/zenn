@@ -1,5 +1,5 @@
 ---
-title: "Next.jsでFirebase経由でGoogle認証を利用する"
+title: "Next.jsでFirebase経由のGoogle認証を利用する"
 emoji: "🍣"
 type: "tech"
 topics: ["nextjs","typescript","firebase","javascript"]
