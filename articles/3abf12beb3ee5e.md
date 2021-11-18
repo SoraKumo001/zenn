@@ -1,5 +1,5 @@
 ---
-title: "[React] 最短で\nを<br>に変換する方法"
+title: "[React] 最短で￥nを<br>に変換する方法"
 emoji: "📌"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [react]
