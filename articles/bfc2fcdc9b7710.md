@@ -3,7 +3,7 @@ title: "apollo-server(v3系)は非推奨となったので、@apollo/server(v4�
 emoji: "📑"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [nextjs, graphql, apollo, typescript, react]
-published: false
+published: true
 ---
 
 ※こちらでも同じ記事を書いています
@@ -11,7 +11,7 @@ https://next-blog.croud.jp/contents/CtOK4fDpToThQ8Y2f9Um
 
 # ApolloServer3 のサポート終了は 2023/10/22
 
-以下公式サイトに`Apollo Server 3`の終了と、`Apollo Server 4` 移行の説明が載っています。
+以下公式サイトに`Apollo Server 3`の終了と、`Apollo Server 4` 移行をお勧めする説明が載っています。
 
 https://www.apollographql.com/docs/apollo-server/migration
 
@@ -27,7 +27,7 @@ https://www.apollographql.com/docs/apollo-server/migration
 
 # サンプルを作ってみる
 
-Next.js の APIRoute からアクセス出来る GraphQL のエンドポイントを作ってみます。ただし、普通にやるだけなら公式を見れば良いだろうという話になってしまいます。なので、なぜか避けて通る人が多いファイルのアップロード機能を入れてみます。
+Next.js の APIRoute からアクセス出来る GraphQL のエンドポイントを作ってみます。ただし、普通にやるだけなら公式を見れば良いだろうという話になってしまいます。ということで今回は`Apollo Server 4`になってから情報が壊滅したファイルアップロードの機能をサンプルに加えます。
 
 # Next.js のサンプル
 
@@ -35,33 +35,32 @@ https://github.com/SoraKumo001/next-apollo-server
 
 ## API Route に GraphQL のエンドポイントを用意
 
-`Apollo Server4`では、GraphQL の処理に executeHTTPGraphQLRequest を使用します。httpGraphQLRequest に適切な情報を載せて呼び出します。context は今回使用していませんが、とりあえず汎用的に使用しそうなものを送っています。適切な情報を作る部分は github にソースを載せているのでそちらを参照してください。
+`Apollo Server4`では、GraphQL の処理に executeHTTPGraphQLRequest を使用します。httpGraphQLRequest に適切な情報を載せて呼び出します。context は今回使用していませんが、とりあえず汎用的に使用しそうなものを設定しています。
+
+必要な機能は`@react-libraries/next-apollo-server`に集約させてあります。使い方は以下の通りです。
 
 - src/pages/api/graphql
 
 ```tsx
-import { gql } from "@apollo/client";
-import { ApolloServer } from "@apollo/server";
-import type { NextApiRequest, NextApiResponse } from "next";
-import {
-  createGraphQLRequest,
-  createHeaders,
-  createSearch,
-} from "../../libs/apollo-tools";
-import { File } from "formidable";
 import { promises as fs } from "fs";
+import { ApolloServer } from "@apollo/server";
+import {
+  executeHTTPGraphQLRequest,
+  FormidableFile,
+} from "@react-libraries/next-apollo-server";
+import type { IResolvers } from "@graphql-tools/utils";
+import type { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
 
 /**
- * GraphQLのType設定
+ * Type settings for GraphQL
  */
-const typeDefs = gql`
-  # 日付を返す
+const typeDefs = `
+  # Return date
   scalar Date
   type Query {
     date: Date!
   }
-
-  # ファイル情報を返す
+  # Return file information
   type File {
     name: String!
     type: String!
@@ -74,14 +73,19 @@ const typeDefs = gql`
 `;
 
 /**
- * GraphQLのResolver
+ * Set Context type
  */
-const resolvers = {
+type Context = { req: NextApiRequest; res: NextApiResponse };
+
+/**
+ * Resolver for GraphQL
+ */
+const resolvers: IResolvers<Context> = {
   Query: {
-    date: async () => new Date(),
+    date: async (_context, _args) => new Date(),
   },
   Mutation: {
-    upload: async (_: unknown, { file }: { file: File }) => {
+    upload: async (_context, { file }: { file: FormidableFile }) => {
       return {
         name: file.originalFilename,
         type: file.mimetype,
@@ -94,43 +98,30 @@ const resolvers = {
 /**
  * apolloServer
  */
-const apolloServer = new ApolloServer({
+const apolloServer = new ApolloServer<Context>({
   typeDefs,
   resolvers,
 });
 apolloServer.start();
 
 /**
- * Next.js用APIRouteハンドラ
+ * APIRoute handler for Next.js
  */
-const apolloHandler = async (req: NextApiRequest, res: NextApiResponse) => {
-  //NextApiRequestをGraphQL用のbody形式に変換(multipart/form-data対応)
-  const [body, removeFiles] = await createGraphQLRequest(req);
-  try {
-    const result = await apolloServer.executeHTTPGraphQLRequest({
-      httpGraphQLRequest: {
-        method: req.method ?? "",
-        headers: createHeaders(req),
-        search: createSearch(req),
-        body,
-      },
-      context: async () => ({ req, res }),
-    });
-    if (result.body.kind === "complete") {
-      res.end(result.body.string);
-    } else {
-      for await (const chunk of result.body.asyncIterator) {
-        res.write(chunk);
-      }
-      res.end();
-    }
-  } finally {
-    // multipart/form-dataで作成された一時ファイルの削除
-    removeFiles();
-  }
+const handler: NextApiHandler = async (req, res) => {
+  // Convert NextApiRequest to body format for GraphQL (multipart/form-data support).
+  return executeHTTPGraphQLRequest({
+    req,
+    res,
+    apolloServer,
+    context: async () => ({ req, res }),
+    options: {
+      //Maximum upload file size set at 10 MB
+      maxFileSize: 10 * 1024 * 1024,
+    },
+  });
 };
 
-export default apolloHandler;
+export default handler;
 
 export const config = {
   api: {
@@ -143,7 +134,7 @@ export const config = {
 
 - src/pages/\_app.tsx
 
-createUploadLink で`Upload`タイプのパラメータを multipart 形式に変換させる必要があります。
+createUploadLink で`Upload`タイプのパラメータを multipart 形式に変換させる必要があります。ヘッダーには`apollo-require-preflight`が必要です。
 
 ```tsx
 import type { AppType } from "next/app";
@@ -188,14 +179,14 @@ export default App;
 ```tsx
 import { gql, useMutation, useQuery } from "@apollo/client";
 
-// 日付を取り出す
+// Date retrieval
 const QUERY = gql`
   query date {
     date
   }
 `;
 
-// ファイルをアップロードする
+// Uploading files
 const UPLOAD = gql`
   mutation Upload($file: Upload!) {
     upload(file: $file) {
@@ -219,9 +210,14 @@ const Page = () => {
         Source code
       </a>
       <hr />
-      <button onClick={() => refetch()}>日付更新</button>{" "}
-      {data?.date &&
-        new Date(data.date).toLocaleString("ja-jp", { timeZone: "Asia/Tokyo" })}
+      {/* SSRedacted data can be updated by refetch. */}
+      <button onClick={() => refetch()}>Update date</button>
+      {
+        /* Dates are output as SSR. */
+        data?.date &&
+          new Date(data.date).toLocaleString("en-US", { timeZone: "UTC" })
+      }
+      {/* File upload sample from here down. */}
       <div
         style={{
           height: "100px",
@@ -243,17 +239,170 @@ const Page = () => {
       >
         Upload Area
       </div>
+      {/* Display of information on returned file data to check upload operation. */}
       {file && <pre>{JSON.stringify(file, undefined, "  ")}</pre>}
     </>
   );
 };
+```
 
-export default Page;
+## 変換パッケージのコード
+
+変換そのものは formidable がやっているので、あとは適切にデータを配るだけです。
+
+```tsx
+import { promises as fs } from "fs";
+import { parse } from "url";
+import formidable from "formidable";
+import type {
+  ApolloServer,
+  BaseContext,
+  ContextThunk,
+  GraphQLRequest,
+  HTTPGraphQLRequest,
+} from "@apollo/server";
+import type { NextApiRequest, NextApiResponse } from "next";
+
+/**
+ * Request parameter conversion options
+ */
+export type FormidableOptions = formidable.Options;
+
+/**
+ * File type used by resolver
+ */
+export type FormidableFile = formidable.File;
+
+/**
+ * Converting NextApiRequest to Apollo's Header
+ * Identical header names are overwritten by later values
+ * @returns Header in Map format
+ */
+export const createHeaders = (req: NextApiRequest) =>
+  new Map(
+    Object.entries(req.headers).flatMap<[string, string]>(([key, value]) =>
+      Array.isArray(value)
+        ? value.flatMap<[string, string]>((v) => (v ? [[key, v]] : []))
+        : value
+        ? [[key, value]]
+        : []
+    )
+  );
+
+/**
+ *  Retrieve search from NextApiRequest
+ * @returns search
+ */
+export const createSearch = (req: NextApiRequest) =>
+  parse(req.url ?? "").search ?? "";
+
+/**
+ * Make GraphQL requests multipart/form-data compliant
+ * @returns [body to be set in executeHTTPGraphQLRequest, function for temporary file deletion]
+ */
+export const createBody = (
+  req: NextApiRequest,
+  options?: formidable.Options
+) => {
+  const form = formidable(options);
+  return new Promise<[GraphQLRequest, () => void]>((resolve, reject) => {
+    form.parse(req, async (error, fields, files) => {
+      if (error) {
+        reject(error);
+      } else if (!req.headers["content-type"]?.match(/^multipart\/form-data/)) {
+        resolve([fields, () => {}]);
+      } else {
+        if (
+          "operations" in fields &&
+          "map" in fields &&
+          typeof fields.operations === "string" &&
+          typeof fields.map === "string"
+        ) {
+          const request = JSON.parse(fields.operations);
+          const map: { [key: string]: [string] } = JSON.parse(fields.map);
+          Object.entries(map).forEach(([key, [value]]) => {
+            value.split(".").reduce((a, b, index, array) => {
+              if (array.length - 1 === index) a[b] = files[key];
+              else return a[b];
+            }, request);
+          });
+          const removeFiles = () => {
+            Object.values(files).forEach((file) => {
+              if (Array.isArray(file)) {
+                file.forEach(({ filepath }) => {
+                  fs.rm(filepath);
+                });
+              } else {
+                fs.rm(file.filepath);
+              }
+            });
+          };
+          resolve([request, removeFiles]);
+        } else {
+          reject(Error("multipart type error"));
+        }
+      }
+    });
+  });
+};
+
+/**
+ * Creating methods
+ * @returns method string
+ */
+export const createMethod = (req: NextApiRequest) => req.method ?? "";
+
+/**
+ * Execute a GraphQL request
+ */
+export const executeHTTPGraphQLRequest = async <Context extends BaseContext>({
+  req,
+  res,
+  apolloServer,
+  options,
+  context,
+}: {
+  req: NextApiRequest;
+  res: NextApiResponse;
+  apolloServer: ApolloServer<Context>;
+  context: ContextThunk<Context>;
+  options?: FormidableOptions;
+}) => {
+  const [body, removeFiles] = await createBody(req, options);
+  try {
+    const httpGraphQLRequest: HTTPGraphQLRequest = {
+      method: createMethod(req),
+      headers: createHeaders(req),
+      search: createSearch(req),
+      body,
+    };
+    const result = await apolloServer.executeHTTPGraphQLRequest({
+      httpGraphQLRequest,
+      context,
+    });
+    result.status && res.status(result.status);
+    result.headers.forEach((value, key) => {
+      res.setHeader(key, value);
+    });
+    if (result.body.kind === "complete") {
+      res.end(result.body.string);
+    } else {
+      for await (const chunk of result.body.asyncIterator) {
+        res.write(chunk);
+      }
+      res.end();
+    }
+    return result;
+  } finally {
+    removeFiles();
+  }
+};
 ```
 
 # まとめ
 
 `Apollo Server 3`は非推奨パッケージなので、早々に`Apollo Server 4`への移行をお勧めします。
 
-ちなみにこちらはクライアントに`urql`を使ったバージョンになります。urql の suspense 機能を使って、独自の Exchange を足しつつ SSR しています。こちらの解説記事は改めて書きます。
+ちなみにこちらはクライアントに`urql`を使ったバージョンになります。urql の suspense 機能を使って、独自の Exchange を足しつつ Next.js で SSR しています。withUrqlClient のような余計なものを書かずに、コンポーネント上に配置した hook が自動で SSR 対応になります。こちらの解説記事は改めて書きます。
+
 https://github.com/SoraKumo001/next-urql
