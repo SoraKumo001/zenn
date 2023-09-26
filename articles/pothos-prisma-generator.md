@@ -3,7 +3,7 @@ title: "PrismaのスキーマをからPothosのGraphQLオペレーションを�
 emoji: "💤"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [graphql, pothos, nextjs, typescript, react]
-published: false
+published: true
 ---
 
 # GraphQL Nexus と Pothos GraphQL
