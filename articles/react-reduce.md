@@ -1,5 +1,5 @@
 ---
-title: "Reactのコンポーネントの階層構造をreduceで作る"
+title: "Reactコンポーネントの階層構造をreduceで作る"
 emoji: "💬"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [react, typescript]
