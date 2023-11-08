@@ -1,5 +1,5 @@
 ---
-title: "Next.jsによるGraphQLに入門させないGraphQL入門"
+title: "🚻 Next.jsによるGraphQLに入門させないGraphQL入門"
 emoji: "🚻"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [nextjs, graphql, pothos, react, prisma]

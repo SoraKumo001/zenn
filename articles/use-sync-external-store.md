@@ -1,10 +1,16 @@
 ---
-title: "[React] useSyncExternalStoreで作るオレオレStateライブラリ"
-emoji: "🐫"
+title: "🚻 ReactのuseSyncExternalStoreで作るオレオレStateライブラリ"
+emoji: "🚻"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [nextjs, typescript, react, javascript]
-published: false
+published: true
 ---
+
+- サンプルコード
+  - GitHub  
+    https://github.com/SoraKumo001/next-syncexternalstore
+  - Vercel  
+    https://next-syncexternalstore.vercel.app/
 
 # あまり話題にされない useSyncExternalStore
 
