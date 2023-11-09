@@ -16,6 +16,10 @@ published: true
 
 ReactHooks 解説系の記事で無かったことにされたり、一瞬だけ概要が紹介されるだけなことが多い useSyncExternalStore です。可哀想なので、オレオレ State ライブラリを作って使い方を紹介したいと思います。
 
+ちなみに useSyncExternalStore を使うと、こちらの記事で使っているようなライブラリも簡単に作れます。
+
+https://zenn.dev/sora_kumo/articles/app-dir-client-ssr
+
 # オレオレ State ライブラリは一瞬で構築できる
 
 ```ts
