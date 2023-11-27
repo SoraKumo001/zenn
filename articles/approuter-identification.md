@@ -1,5 +1,5 @@
 ---
-title: "Next.js実行中に、Server/Client/Pagesのどのモジュールなのかを識別する"
+title: "Next.jsのAppRouter/PagesRouter実行中に、Server/Client/Pagesのどのモジュールなのかを識別する"
 emoji: "🚻"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [nextjs, typescript, react, javascript, approuter]
