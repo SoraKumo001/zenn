@@ -6,6 +6,12 @@ topics: [nextjs, typescript, react, javascript, approuter]
 published: true
 ---
 
+- シリーズ投稿
+
+1. https://zenn.dev/sora_kumo/articles/approuter-identification
+2. https://zenn.dev/sora_kumo/articles/approuter-cache
+3. https://zenn.dev/sora_kumo/articles/approuter-context
+
 # Context を利用できない Server コンポーネント
 
 Next.js の AppRouter の Server コンポーネントでは、`createContext`が使用できません。これに加え、Next.js では`createServerContext`も使用できなくなったため、Context を使ってデータをコンポーネントツリーに配ることができません。

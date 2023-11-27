@@ -6,6 +6,12 @@ topics: [nextjs, typescript, react, javascript, approuter]
 published: true
 ---
 
+- シリーズ投稿
+
+1. https://zenn.dev/sora_kumo/articles/approuter-identification
+2. https://zenn.dev/sora_kumo/articles/approuter-cache
+3. https://zenn.dev/sora_kumo/articles/approuter-context
+
 # 厄介なコンポーネントの状態
 
 Next.js の AppRouter ではデフォルトで ServerComponent の状態から始まり、`"use client"`を先頭につけることによって、ClientComponents として動作させることができます。また、コンポーネントを記述したファイルに`"use xxxxx"`を付けなかった場合は、呼び出し元のコンポーネントの状態を継承します。

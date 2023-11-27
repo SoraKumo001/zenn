@@ -6,6 +6,12 @@ topics: [nextjs, typescript, react, javascript, approuter]
 published: true
 ---
 
+- シリーズ投稿
+
+1. https://zenn.dev/sora_kumo/articles/approuter-identification
+2. https://zenn.dev/sora_kumo/articles/approuter-cache
+3. https://zenn.dev/sora_kumo/articles/approuter-context
+
 # AppRouter と React.cache
 
 AppRouter で State を持たない Server コンポーネント同士のデータ共有は、React.cache が基本となります。AppRouter の話題だと fetch のキャッシュや ServerActions の話に目が持っていかれますが、それよりも根本の話になります。
