@@ -9,8 +9,8 @@
   "license": "MIT",
   "devDependencies": {
     "textlint": "^13.4.1",
-    "textlint-rule-preset-ja-technical-writing": "^8.0.0",
+    "textlint-rule-preset-ja-technical-writing": "^9.0.0",
     "textlint-rule-spellcheck-tech-word": "^5.0.0",
-    "zenn-cli": "^0.1.149"
+    "zenn-cli": "^0.1.150"
   }
 }
