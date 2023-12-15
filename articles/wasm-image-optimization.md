@@ -16,15 +16,15 @@ Cloudflare Workers では、一度のリクエストで処理できる CPU 時�
 
 # コンパイラは Emscripten の emcc を使う
 
-Emscripten は、C++ を JavaScript にコンパイルするためのツールです。これを使うことで、C++ で書いたコードを WebAssembly にコンパイルすることが出来ます。ということで、早速作ることにしました。
+Emscripten は、C++ を JavaScript + WebAssembly にコンパイル可能なツールです。これを使うことで、C++ で書いたコードを WebAssembly にコンパイルし、JavaScript から呼び出すことが出来ます。ということで、早速作ることにしました。
 
 # Emscripten では libpng と libjpeg がすぐに使える
 
-Emscripten は既存のライブラリを取り込む仕組みとして ports というものを提供しています。これを使うことで、コンパイル時にオプション指定するだけで libpng や libjpeg を組み込んだ状態でビルドすることが出来ます。ただし、libwebp は組み込まれていません。自分でソースをダウンロードしてビルドに混ぜる必要があります。
+Emscripten は既存のライブラリを取り込む仕組みとして ports というものを提供しています。この仕組みを利用すると、コンパイル時にオプション指定するだけで libpng や libjpeg を組み込んだ状態でビルドできます。ただし、libwebp は自動で組み込まれません。自分でソースをダウンロードしてビルドに混ぜる必要があります。
 
-# Emscripten には SDL2 もいる
+# Emscripten には SDL2 も含まれている
 
-SDL2 は、画像の読み込みや描画を簡単に行うことが出来るライブラリです。これも ports に含まれています。libpng、libjpeg、libwebp を使えるようにしておけば、SDL にバイナリを放り込むだけで画像を読み込むことが出来ます。ただし webp 出力はサポートされていないので、そこは libwebp の命令を使うことになります。
+SDL2 は、画像の読み込みや描画を簡単に行うことが出来るライブラリです。これも ports に含まれています。libpng、libjpeg、libwebp を使えるようにしておけば、SDL にバイナリを放り込むだけで画像を読み込むことが出来ます。ただし webp 出力はサポートされていないので、そこは libwebp の命令を直接使うことになります。
 
 # 画像変換のコード
 
@@ -47,8 +47,8 @@ val optimize(std::string img_in, float width, float height, float quality) {
     }
 
     SDL_Surface* srcSurface = IMG_Load_RW(rw, 1);
+    SDL_FreeRW(rw);
     if (!srcSurface) {
-        SDL_FreeRW(rw);
         return val::null();
     }
 
@@ -108,6 +108,8 @@ Cloudflare Workers の JavaScript から WebAssembly を呼び出すには、was
 ちなみに Cloudflare Workers では、Worker あたりのパッケージサイズが 1MB 以内と決められています。wasm のサイズは 1MB を超えていましたが、パッケージとして圧縮されると 400KB 程度になるのでセーフでした。
 
 https://www.npmjs.com/package/wasm-image-optimization
+
+ちなみに lifavif のエンコードの実装もやってみましたが、こちらは圧縮後 1MB 超えのパッケージになってしまったので断念しました。
 
 # Cloudflare Workers で動かす
 
@@ -175,7 +177,7 @@ export default {
 };
 ```
 
-ちなみに next.config.js の設定で Workers のデプロイ先のアドレスを指定することによって、Workers で画像を圧縮することが出来ます。
+以下のように next.config.js の設定で Workers のデプロイ先のアドレスを指定することによって、Workers で画像を圧縮することが出来ます。
 
 ```js
 /**
@@ -191,7 +193,7 @@ export default config;
 
 # 変換してみる
 
-1024\*1024 の 266KB の画像を`?url=https://xxx&w=256&q=75`というようなオプションで変換してみます。
+1024\*1024 の 266KB の画像を`?url=https://xxx&w=256&q=75`というオプションで変換してみます。
 
 ![](/images/wasm-image-optimization/2023-12-13-09-08-07.jpg)
 
