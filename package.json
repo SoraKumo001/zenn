@@ -8,9 +8,9 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
-    "textlint": "^13.4.1",
-    "textlint-rule-preset-ja-technical-writing": "^9.0.0",
+    "textlint": "^14.0.3",
+    "textlint-rule-preset-ja-technical-writing": "^10.0.1",
     "textlint-rule-spellcheck-tech-word": "^5.0.0",
-    "zenn-cli": "^0.1.150"
+    "zenn-cli": "^0.1.153"
   }
 }

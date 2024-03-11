@@ -1,0 +1,94 @@
+<mxfile host="65bd71144e">
+    <diagram id="sASE9WcuDO3cfZ1yfAOC" name="ページ1">
+        <mxGraphModel dx="3560" dy="1228" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="29" value="" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="-80" y="45" width="940" height="490" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="Cloudflare Workers&lt;br&gt;&lt;br&gt;PrismaEdgeアプリケーション&lt;br&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="80" width="200" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" parent="1" vertex="1">
+                    <mxGeometry x="-20" y="310" width="60" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" parent="1" vertex="1">
+                    <mxGeometry x="-20" y="190" width="60" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" parent="1" vertex="1">
+                    <mxGeometry x="-20" y="70" width="60" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" parent="1" vertex="1">
+                    <mxGeometry x="-20" y="430" width="60" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="Deno&lt;br&gt;Prisma&amp;nbsp; Accelerate&lt;br&gt;をエミュレート" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="260" y="250" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="Cloudflare Workers&lt;br&gt;&lt;br&gt;PrismaEdgeアプリケーション&lt;br&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="195" width="200" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="Cloudflare Workers&lt;br&gt;&lt;br&gt;PrismaEdgeアプリケーション&lt;br&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="315" width="200" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="Cloudflare Workers&lt;br&gt;&lt;br&gt;PrismaEdgeアプリケーション&lt;br&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="440" width="200" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="" style="endArrow=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="11" target="3" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="350" y="190" as="sourcePoint"/>
+                        <mxPoint x="400" y="140" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="20" value="" style="endArrow=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" target="12" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="380" y="280" as="sourcePoint"/>
+                        <mxPoint x="450" y="125" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="21" value="" style="endArrow=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="11" target="13" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="390" y="280" as="sourcePoint"/>
+                        <mxPoint x="460" y="135" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="22" value="" style="endArrow=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" target="14" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="380" y="280" as="sourcePoint"/>
+                        <mxPoint x="470" y="145" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="23" value="" style="endArrow=none;html=1;entryX=1;entryY=0;entryDx=0;entryDy=52.5;entryPerimeter=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="11" target="9" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="390" y="600" as="sourcePoint"/>
+                        <mxPoint x="440" y="550" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="24" value="" style="endArrow=none;html=1;entryX=1;entryY=0;entryDx=0;entryDy=52.5;entryPerimeter=0;" parent="1" target="8" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="260" y="280" as="sourcePoint"/>
+                        <mxPoint x="200" y="142.5" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="25" value="" style="endArrow=none;html=1;entryX=1;entryY=0;entryDx=0;entryDy=52.5;entryPerimeter=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="11" target="7" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="270" y="290" as="sourcePoint"/>
+                        <mxPoint x="200" y="262.5" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="26" value="" style="endArrow=none;html=1;entryX=1;entryY=0;entryDx=0;entryDy=52.5;entryPerimeter=0;exitX=-0.002;exitY=0.631;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="11" target="10" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="280" y="300" as="sourcePoint"/>
+                        <mxPoint x="210" y="272.5" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="32" value="DB接続用のID/PASS" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;" vertex="1" parent="1">
+                    <mxGeometry x="140" y="130" width="140" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="33" value="API Key&lt;br&gt;DB接続文字列を含める" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="350" y="130" width="150" height="80" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
