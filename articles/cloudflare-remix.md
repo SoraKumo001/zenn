@@ -2,9 +2,12 @@
 title: "[すべて無料]Remix+Cloudflare Pagesでブロクシステムを作成する"
 emoji: "🤖"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: []
-published: false
+topics: [remix, nextjs, react, prisma, cloudflare]
+published: true
 ---
+
+こちらで同システムを使って Blog を書いています。
+https://next-blog.croud.jp/contents/eec22faf-3563-4a77-9a47-4dfddc604141
 
 # 環境構成
 
@@ -36,7 +39,25 @@ published: false
 
 もともと React のフレームワークは Next.js を使っていました。しかし商利用も可能で制限がゆるい Cloudflare Pages をインフラとして使いたかったので、相性の良い Remix に移植することにしました。
 
-一応 CloudflarePages でも Next.js は動くのですが、私の Blog システムで Edge 設定を行うと、謎のビルドエラーが出ました。配置したファイルの数を減らすと内容に関係なく何故かビルドが通ります。容量的に問題があるわけでもなく、結局解決不能だったので Next.js の使用は諦めました。
+CloudflarePages でも Next.js は動くのですが、私の Blog システムで Edge 設定を行うと、謎のビルドエラーが出ました。配置したファイルの数を減らすと内容に関係なく何故かビルドが通ります。容量的に問題があるわけでもなく、結局解決不能だったので Next.js の使用は諦めました。
+
+# 事前に知っておくべき Cloudflare Pages/Workers の制限事項
+
+https://developers.cloudflare.com/workers/platform/limits/#worker-limits
+
+| 項目           | 制限                                                                               |
+| -------------- | ---------------------------------------------------------------------------------- |
+| リクエスト数   | 10 万回/日<br>千回/分                                                              |
+| メモリ         | 128MB                                                                              |
+| CPU            | 10ms<br>使用している感じだと、連続してオーバーしなければある程度は許してくれる感じ |
+| 外部への fetch | 最大並列数 6<br>50 回/1 アクセスあたり                                             |
+| 内部サービス   | 1,000 回/1 アクセスあたり                                                          |
+| Body サイズ    | 100MB                                                                              |
+| Worker サイズ  | 1MB(zip 圧縮サイズで計算)                                                          |
+
+画像の最適化の場合、1600\*1600 ぐらいの画像を変換すると高確率で CPU 制限に引っかかります。また、外部サービスを呼び出すようなコードを書いた場合、並列アクセス時にデッドロックしないように気をつける必要があります。
+
+また、Worker サイズはバックエンドで動く JavaScript や wasm を圧縮したときのサイズです。Pages で Assets として配るファイルは計算に入れません。このサイズがどうにもならない時は、Worker を分離するしかありません。
 
 # 必要な機能
 
@@ -830,7 +851,9 @@ export const TopPage: FC<Props> = ({}) => {
 
 #### Blurhash
 
-画像最適化機能用のコンポーネントです。与えられた URL を画像最適化用のアドレスに変換する機能と、Blurhash の機能を組み込んでいます。Blurhash は画像が読み込まれるまでの間、元画像から生成したブラーのかかったような代替画像を表示する機能です。この Blog システムでは画像アップロード時に、Blurhash で生成した短い文字列をファイル名として組み込んでいます。そのファイル名を参照して代替画像を表示しています。
+画像最適化機能用のコンポーネントです。与えられた URL を画像最適化用のアドレスに変換する機能と、Blurhash の機能を組み込んでいます。Blurhash は画像が読み込まれるまでの間、元画像から生成したブラーのかかったような代替画像を表示する機能です。この Blog システムでは画像アップロード時に、Blurhash で生成した短い文字列をファイル名として組み込んでいます。そのファイル名を参照して代替画像を表示しています。一応実装はしてみたものの、画像最適化機能+Cloudflare の CDN で高速に画像が配信されるため、効果の確認がし辛いです。
+
+![](/images/cloudflare-remix/2024-03-12-09-12-35.gif)
 
 ただ Blurhash で生成される文字列 Base83 は、そのままファイル名として使用すると URL 文字列で問題が起こるので、いったんバイナリに戻してから再変換をかけています。
 
@@ -988,6 +1011,12 @@ export const getImageSize = async (blob: Blob) => {
   return { width: img.naturalWidth, height: img.naturalHeight };
 };
 ```
+
+# Vite の利用
+
+途中で Remix を Vite 対応版に変更しています。その時に発生した問題をこちらにまとめています。
+
+https://next-blog.croud.jp/contents/390feabe-39bf-4c5e-a1f3-01a2e3d317a6
 
 # まとめ
 
