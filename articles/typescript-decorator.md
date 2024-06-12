@@ -165,3 +165,46 @@ try {
 今回は TypeScript の Decorator を使って、実行時に引数と戻り値の型をチェックしてみました。Decorator を使っているパッケージで有名どころだと NestJS や TypeORM などが挙げられます。
 
 また、TypeScript は JavaScript に型を付けただけのようなイメージがありますが、多機能なトランスコンパイラなので、コンパイル後に生成されるコードは、単純に型だけが抜かれた状態ではありません。特に ESM や CJS の両対応パッケージを作る場合など、設定次第でモジュールをインポートするコードが大きく異なるので、このあたりで苦労している方も多いかと思います。
+
+## 蛇足
+
+これがトランスコンパイラを使うときの注意点の一つです。TypeScript が装飾用の型あり JavaScript ではなく、トランスコンパイラであるとこをしっかり認識する必要があります。
+
+- 元ソース
+
+```ts
+export class Test {
+  a: number | undefined;
+}
+
+const test = new Test();
+console.log(Object.keys(test));
+```
+
+- ES2015
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2015"
+  }
+}
+```
+
+```txt
+[]
+```
+
+- ESNext
+
+```json
+{
+  "compilerOptions": {
+    "target": "ESNext"
+  }
+}
+```
+
+```txt
+[ 'a' ]
+```
