@@ -1,8 +1,0 @@
-{
-  "filters": {},
-  "rules": {
-    "preset-ja-technical-writing": true,
-    "spellcheck-tech-word": true,
-    "ja-technical-writing/no-exclamation-question-mark": false
-  }
-}
