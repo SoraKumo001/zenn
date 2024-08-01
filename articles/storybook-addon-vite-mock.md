@@ -2,7 +2,7 @@
 title: "Storybook + Vite + React のインタラクションテストでモジュールモックする"
 emoji: "📌"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: []
+topics: [vite, react, typescript, storybook, jest]
 published: true
 ---
 
