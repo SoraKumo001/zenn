@@ -3,16 +3,20 @@ title: "Storybook + Vite + React のインタラクションテストでモジ�
 emoji: "📌"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: []
-published: false
+published: true
 ---
 
 # `@storybook/nextjs`使用時のインタラクションテストとモジュールモック
 
-Storybook でインタラクションテストを使用すると、コンポーネントの動作を GUI で確認しつつテストを書くことが出来ます。Jest や Vitest の CUI 上で表示確認無しでテストを書くのに比べると、圧倒的に楽にテストを書くことが可能です。ただし問題があって、Jest や Vitest から専用コマンドでテストを呼び出すときには、依存パッケージなどの関数が簡単にモック化できますが、Storybook のインタラクションテストではデータモック止まりになってしまいます。これを解決するため、以前に`@storybook/nextjs`用に Webpack と Babel の挙動をカスタマイズして[storybook-addon-module-mock](https://www.npmjs.com/package/storybook-addon-module-mock)を作りました。これを使えば import した外部モジュール内の関数をモック化することが可能です。[公式ドキュメント](https://storybook.js.org/docs/get-started/nextjs#react-server-components-rsc)にも紹介されています。ただし、Webpack の使用が必須となるため、Vite を使用している場合は使用できません。
+Storybook でインタラクションテストを使用すると、コンポーネントの動作を GUI で確認しつつテストを書くことが出来ます。Jest や Vitest の CUI 上で表示確認無しでテストを書くのに比べると、圧倒的に楽にテストを書くことが可能です。ただし問題があって、Jest や Vitest から専用コマンドでテストを呼び出すときには、依存パッケージなどを関数単位で簡単にモック化できますが、Storybook のインタラクションテストではそうではありません。以下のようなファイル単位でのモックが必要となります。
+
+https://storybook.js.org/blog/type-safe-module-mocking/
+
+関数単位でのモック作成は、以前に`@storybook/nextjs`用に Webpack と Babel の挙動をカスタマイズして[storybook-addon-module-mock](https://www.npmjs.com/package/storybook-addon-module-mock)を作りました。これを使えば import した外部モジュール内の関数をモック化することが可能です。[公式ドキュメント](https://storybook.js.org/docs/get-started/nextjs#react-server-components-rsc)にも紹介されています。ただし、Webpack の使用が必須となるため、Vite を使用している場合は使用できません。
 
 # `@storybook/react-vite`使用時のインタラクションテストとモジュールモック
 
-`@storybook/react-vite`はその名の通り Vite を経由してモジュールバンドルが行われます。Webpack を前提とする[storybook-addon-module-mock](https://www.npmjs.com/package/storybook-addon-module-mock)は使えません。ということで今回、Vite 使用時にモジュールをモックするため[storybook-addon-vite-mock](https://www.npmjs.com/package/storybook-addon-vite-mock)を開発しました。Vite の挙動をカスタマイズし、外部モジュールの関数をモック化することが可能となります。
+`@storybook/react-vite`はその名の通り Vite を経由してモジュールバンドルが行われます。ということで今回、Vite 使用時にモジュールをモックするため[storybook-addon-vite-mock](https://www.npmjs.com/package/storybook-addon-vite-mock)を開発しました。Vite の挙動をカスタマイズし、外部モジュールの関数をモック化することが可能となります。
 
 # モジュールモックの原理
 
@@ -602,4 +606,4 @@ export const Primary: StoryObj<typeof ReRenderArgs> = {
 
 # まとめ
 
-Storybook + Vite のインタラクション環境下で import した関数のモックが可能になりました。これでテストを書くのが容易になります。ただ、Storybook@8 になってから、カバレッジの測定がまともに行えない状態になっているようです。そのあたりが改善されると、本格的なテスト環境として使えるようになりそうです。
+Storybook + Vite のインタラクション環境下で import した関数のモックが可能になりました。これでテストを書くのが容易になります。
