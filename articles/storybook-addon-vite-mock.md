@@ -16,7 +16,11 @@ https://storybook.js.org/blog/type-safe-module-mocking/
 
 # `@storybook/react-vite`使用時のインタラクションテストとモジュールモック
 
-`@storybook/react-vite`はその名の通り Vite を経由してモジュールバンドルが行われます。ということで今回、Vite 使用時にモジュールをモックするため[storybook-addon-vite-mock](https://www.npmjs.com/package/storybook-addon-vite-mock)を開発しました。Vite の挙動をカスタマイズし、外部モジュールの関数をモック化することが可能となります。
+`@storybook/react-vite`はその名の通り Vite を経由してモジュールバンドルが行われます。ということで今回、Vite 使用時にモジュールをモックするため以下のものを開発しました。
+
+https://www.npmjs.com/package/storybook-addon-vite-mock
+
+Vite の挙動をカスタマイズし、外部モジュールの関数をモック化することが可能となります。
 
 # モジュールモックの原理
 
