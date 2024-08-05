@@ -1,18 +1,33 @@
 ---
-title: "Remix + Cloudflare で環境変数などをクライアントへ引き渡す方法"
+title: "Remix + Cloudflare でloaderを使わず、環境変数などをクライアントへ引き渡す方法"
 emoji: "🤖"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: [remix, cloudflare, env, ssr]
-published: false
+topics: [remix, cloudflare, env, ssr, npm]
+published: true
 ---
 
 # Cloudflare と環境変数
 
 Cloudflare の Pages や Workers は、プロセス起動時点では環境変数が設定されていません。各エンドポイントが呼び出された時点で、環境変数が設定されます。そのため、サーバーサイドで環境変数を使う場合は、リクエスト毎に環境変数を取得する必要があります。
 
-このため、クライアント側に環境変数の値を真っ当に引き渡そうとすると、routes ごとに loader を設置して、ページごとに環境変数を配布するコードを書く必要があります。これは非常に面倒です。
+クライアント側に環境変数の値を真っ当に引き渡そうとすると、routes ごとに loader を設置して、ページごとに環境変数を配布しなければなりません。これは非常に面倒です。Remix の公式ドキュメントでは以下のようにやり方が紹介されています。
 
-そこで、環境変数を簡単にクライアント側に引き渡すための方法を紹介します。
+https://remix.run/docs/en/main/guides/envvars#browser-environment-variables
+
+ここに含まれている以下のコードは実は致命的な問題があって、データに`</script>`という文字列が含まれていた場合、タグが終了してデータがぶった切れます。このようなデータの引き渡しを正常に処理するなら「<」 をパースする必要があります。
+
+```html
+<script
+  dangerouslySetInnerHTML="{{"
+  __html:
+  `window.ENV="${JSON.stringify("
+  data.ENV
+  )}`,
+  }}
+/>
+```
+
+今回は、必要な設定を最初に埋め込むだけで、クライアントに環境変数配る方法を紹介します。もちろん上記のような問題も対処済みです。
 
 # 使用パッケージ
 
@@ -32,9 +47,7 @@ https://remix-provider.pages.dev/
 
 ### entry.server.tsx
 
-ServerProvider を設置して、クライアントに渡したいデータを設定します。
-
-初回リクエスト時にデータを設定するため、routes ごとに loader を設置する必要はありません。
+ServerProvider を設置して、クライアントに渡したいデータを設定します。初回リクエスト時にデータを設定するため、routes ごとに loader を設置する必要はありません。また、環境変数の他にサンプルとしてリクエストヘッダから host も渡しています。もちろん cookie なども引き渡し可能です。
 
 ```tsx
 import type { AppLoadContext, EntryContext } from "@remix-run/cloudflare";
@@ -162,7 +175,7 @@ export default function Index() {
 
 簡単にサーバー側のデータをクライアントに配ることが出来ました。これにより、環境変数やリクエストヘッダなどをクライアント側で利用することが可能になります。
 
-Remix + Cloudflare でブログシステムを作ったときに、必要だったので作った機能を分離させて、今回パッケージ化しました。同じようパッケージが他に見当たらないのが不思議なのですが、みなさん真面目に loader を書いて環境変数を配っているのでしょうか？
+Remix + Cloudflare でブログシステムを作成する過程で作ったものを、今回、機能を分離させてパッケージ化しました。同じようパッケージが他に見当たらないのが不思議なのですが、他の方々は loader を書いて環境変数を配っているのでしょうか？
 
 https://next-blog.croud.jp/contents/eec22faf-3563-4a77-9a47-4dfddc604141
 
