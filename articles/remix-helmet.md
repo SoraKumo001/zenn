@@ -3,7 +3,7 @@ title: "Remixでmetaをエクスポートせずにheadの内容を書き換え�
 emoji: "💭"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [remix, react, helmet, typescript]
-published: false
+published: true
 ---
 
 # Remix の head の内容制御
@@ -17,10 +17,6 @@ Remix では Head の内容を設定するには、routes に配置したファ�
 ## throw promise
 
 やり方は簡単です。現在のタイミングでレンダリングをスキップしたいときに`throw promise`を実行するだけです。この機能、非同期処理を待つ機能だと思われていますが、正確にはコンポーネントの評価を一旦スキップする機能です。必要なデータが出揃ってスキップしたコンポーネントを再評価したい場合は、promise の resolve を呼び出します。
-
-## Suspense は不要
-
-`throw promise`は`Suspense`とセットで紹介されることが多いですが、`Suspense`はストリーミングレンダリングで境界を設定する場合以外は使いません。クライアントでローディング時に使う場合などでも紹介されることがありますが、ローディング描画に関する表現が著しく制限されるので、こういった表示は別に作ったほうが無難です。つまりストリーミング使うつもりがなければ、`Suspense`は全く不要です。
 
 # 実際にやってみる
 
@@ -106,4 +102,4 @@ export default function Index() {
 
 # まとめ
 
-以前に https://github.com/SoraKumo001/cloud-blog でブログシステムを Next.js から Remix+Cloudflare に移植した際、該当機能がなかったため実装した機能なのですが、SSR 時に同等の事ができるライブラリがなかったので、npm パッケージとして切り出しました。React の標準機能の`throw promise`によるレンダリング順序の制御は、色々なことに応用が聞きます。
+以前に https://github.com/SoraKumo001/cloud-blog でブログシステムを Next.js から Remix+Cloudflare に移植した際、該当機能がなかったため実装した機能なのですが、SSR 時に同等の事ができるライブラリがなかったので、npm パッケージとして切り出しました。React の標準機能の`throw promise`によるレンダリング順序の制御は、色々なことに応用が効きます。
