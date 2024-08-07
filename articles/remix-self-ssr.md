@@ -1,18 +1,18 @@
 ---
-title: "ReactのSSRにフレームワークの機能は必要ない、Remixの機能を使わずReactの標準機能でSSR"
+title: "ReactのSSRにフレームワークの機能は必要ない、Remixの機能に依存せずReactの標準機能でSSR"
 emoji: "🙌"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: []
+topics: [remix, cloudflare, ssr, react]
 published: false
 ---
 
 # React の SSR にフレームワークの機能は必要ない
 
-React で SSR を行う際、フレームワークの機能を使わずに React の標準機能だけで実現する方法を紹介します。
+React で SSR を行う際、フレームワークの機能を使わずに React の標準機能だけで実現する方法を紹介します。Next.js でも同じ方法が有効なので、これを使えば Remix への依存が本当の意味で最小になります。
 
-一般的な方法だと Remix で SSR を行う場合、routes 直下のファイルで実装した loader 関数を使ってデータを作成し、各コンポーネント内の useLoaderData データを受け取ります。この方法だと、ページの頭でどんなデータを取得するかを決めなければならず、コンポーネントの状態に合わせて柔軟にデータを用意することが困難です。
+Remix での一般的な方法だと SSR を行う場合、routes 直下のファイルで実装した loader 関数を使ってデータを作成し、各コンポーネント内の useLoaderData データを受け取ります。この方法だと、ページの頭でどんなデータを取得するかを決めなければならず、コンポーネントの状態に合わせて柔軟にデータを用意することが困難です。
 
-実はそんな方法を使わずとも React には、コンポーネント側でデータを取得する機能が用意されています。もちろん React の利点を殺す ServerComponents のことではありません。普通のコンポーネントで実現可能なのです。あるのに何故か誰もやらない機能を使っていきます。
+実はそんな方法を使わずとも React には、コンポーネント側でデータを取得する機能が用意されています。もちろん React の利点を殺す ServerComponents のことではありません。普通のコンポーネントで実現可能なのです。
 
 # React の標準機能で SSR を行う際の必要なテクニック
 
@@ -207,6 +207,135 @@ export default function Page() {
 }
 ```
 
+## 出力された HTML
+
+loader や meta のエクスポート無しでデータ込みの HTML が出力されています。
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/assets/root-Cwtj2YX8.css" />
+    <script id="__REMIX_HEAD_VALUE__" type="application/json">
+      [
+        {
+          "type": "title",
+          "props": {
+            "children": "千葉県の天気"
+          }
+        }
+      ]
+    </script>
+    <title>千葉県の天気</title>
+  </head>
+  <body>
+    <div>
+      <a data-discover="true" href="/">戻る</a>
+    </div>
+    <div class="mt-4">
+      <h1 class="flex text-4xl font-extrabold leading-none items-center gap-2">
+        千葉県<button
+          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2  dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+        >
+          Reload
+        </button>
+      </h1>
+      <div>2024/8/4 10:34:00</div>
+      <div></div>
+      <div style="white-space:pre-wrap">
+        関東甲信地方は、緩やかに高気圧に覆われています。
+        　千葉県は、晴れています。
+        　４日は、高気圧に覆われますが、湿った空気の影響を受けるため、晴れ夕方から曇りとなるでしょう。
+        　５日は、引き続き、緩やかに高気圧に覆われますが、湿った空気の影響を受けるため、晴れ時々曇りとなる見込みです。
+        　千葉県の太平洋沿岸の海上では、４日から５日にかけて、うねりを伴い波がやや高いでしょう。
+      </div>
+    </div>
+    <script>
+      ((STORAGE_KEY2, restoreKey) => {
+        if (!window.history.state || !window.history.state.key) {
+          let key2 = Math.random().toString(32).slice(2);
+          window.history.replaceState(
+            {
+              key: key2,
+            },
+            ""
+          );
+        }
+        try {
+          let positions = JSON.parse(
+            sessionStorage.getItem(STORAGE_KEY2) || "{}"
+          );
+          let storedY = positions[restoreKey || window.history.state.key];
+          if (typeof storedY === "number") {
+            window.scrollTo(0, storedY);
+          }
+        } catch (error) {
+          console.error(error);
+          sessionStorage.removeItem(STORAGE_KEY2);
+        }
+      })("positions", null);
+    </script>
+    <link rel="modulepreload" href="/assets/manifest-4d736570.js" />
+    <link rel="modulepreload" href="/assets/entry.client-DKQ85Fyp.js" />
+    <link rel="modulepreload" href="/assets/components-33g9JuwS.js" />
+    <link rel="modulepreload" href="/assets/index-vCBuBoWv.js" />
+    <link rel="modulepreload" href="/assets/index-BiVa1t-t.js" />
+    <link rel="modulepreload" href="/assets/root-D4NJm1pT.js" />
+    <link rel="modulepreload" href="/assets/weather._id-9DOUjnGC.js" />
+    <script>
+      window.__remixContext = {
+        url: "/weather/120000",
+        basename: "/",
+        future: {
+          v3_fetcherPersist: true,
+          v3_relativeSplatPath: true,
+          v3_throwAbortReason: true,
+          unstable_singleFetch: false,
+          unstable_fogOfWar: false,
+        },
+        isSpaMode: false,
+        state: {
+          loaderData: {
+            root: null,
+            "routes/weather.$id": null,
+          },
+          actionData: null,
+          errors: null,
+        },
+      };
+    </script>
+    <script type="module" async="">
+      import "/assets/manifest-4d736570.js";
+      import * as route0 from "/assets/root-D4NJm1pT.js";
+      import * as route1 from "/assets/weather._id-9DOUjnGC.js";
+
+      window.__remixRouteModules = {
+        root: route0,
+        "routes/weather.$id": route1,
+      };
+
+      import("/assets/entry.client-DKQ85Fyp.js");
+    </script>
+  </body>
+  <script id="__NEXT_DATA_PROMISE__" type="application/json">
+    {
+      "120000": {
+        "data": {
+          "publishingOffice": "銚子地方気象台",
+          "reportDatetime": "2024-08-04T10:34:00+09:00",
+          "targetArea": "千葉県",
+          "headlineText": "",
+          "text": "　関東甲信地方は、緩やかに高気圧に覆われています。\n\n　千葉県は、晴れています。\n\n　４日は、高気圧に覆われますが、湿った空気の影響を受けるため、晴れ夕方から曇りとなるでしょう。\n\n　５日は、引き続き、緩やかに高気圧に覆われますが、湿った空気の影響を受けるため、晴れ時々曇りとなる見込みです。\n\n　千葉県の太平洋沿岸の海上では、４日から５日にかけて、うねりを伴い波がやや高いでしょう。"
+        },
+        "isLoading": false
+      }
+    }
+  </script>
+</html>
+```
+
 # まとめ
 
-React の SSR にはフレームワークの機能は必要ありません。React の標準機能だけで実現することが可能です。この記事では、`throw promise`を使ってコンポーネントの評価順を制御し、データの取得を行いました。また、データルーティングを行うことで、サーバ側で取得したデータをクライアント側で再利用することができるようにしました。これにより、フレームワークの機能を使わずに、React の標準機能だけで SSR を実現することができました。
+Remix や Next.js などの種類に関係なく、React の SSR にフレームワークの機能は必要ありません。React の標準機能だけで実現することが可能です。この記事では、`throw promise`を使ってコンポーネントの評価順を制御し、データの出力を行いました。また、データルーティングを行うことで、サーバ側のデータをクライアント側で再利用しています。これにより、フレームワークの機能を使わずに、React の標準機能だけで SSR を実現することができました。
