@@ -2,8 +2,8 @@
 title: "ReactのSSRにフレームワークの機能は必要ない、Remixの機能に依存せずReactの標準機能でSSR"
 emoji: "🙌"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: [remix, cloudflare, ssr, react]
-published: false
+topics: [remix, cloudflare, ssr, react, nextjs]
+published: true
 ---
 
 # React の SSR にフレームワークの機能は必要ない
