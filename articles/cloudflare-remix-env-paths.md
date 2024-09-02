@@ -2,20 +2,20 @@
 title: "Remix + Cloudflare + Prisma で、Node.jsとWrangler実行時にimportを適切に切り替える"
 emoji: "🗂"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: []
-published: false
+topics: [cloudflare, remix, prisma, vite, deno]
+published: true
 ---
 
 # Remix + Cloudflare で Prisma を使う場合の問題点
 
-この環境で Prisma を使う場合に必要になるパッケージ
+Prisma を使う場合に必要になるパッケージ
 
-| remix vite:dev(Node.js) | wrangler pages dev        |
-| ----------------------- | ------------------------- |
-| pg                      | @prisma/adapter-pg-worker |
-| @prisma/adapter-pg      | @prisma/pg-worker         |
+| remix vite:dev (Node.js) | wrangler pages dev (Cloudflare Edge) |
+| ------------------------ | ------------------------------------ |
+| pg                       | @prisma/adapter-pg-worker            |
+| @prisma/adapter-pg       | @prisma/pg-worker                    |
 
-実行方法によって環境が異なるため、インポートするパッケージを変えなければなりません。
+開発時の実行方法によってランタイム環境が異なるため、インポートするパッケージを変えなければなりません。
 
 # 実行環境によるインポートファイルの切り替え
 
@@ -107,15 +107,19 @@ export default function Index() {
 export async function loader({
   context,
 }: LoaderFunctionArgs): Promise<string[]> {
+  const url = new URL(context.cloudflare.env.DATABASE_URL);
+  const schema = url.searchParams.get("schema") ?? undefined;
   const pool = new Pool({
     connectionString: context.cloudflare.env.DATABASE_URL,
   });
-  const adapter = new PrismaPg(pool);
+  const adapter = new PrismaPg(pool, { schema });
   const prisma = new PrismaClient({ adapter });
   await prisma.test.create({ data: {} });
   return prisma.test.findMany().then((r) => r.map(({ id }) => id));
 }
 ```
+
+なお、あまり言及されることがありませんが接続文字列に schema を設定している場合、PrismaPg にパラメータを送らないと認識されないので注意してください。
 
 # まとめ
 
@@ -133,4 +137,4 @@ https://www.npmjs.com/package/wasm-image-optimization-avif
 
 Deno Deploy 用の画像最適化の記事はこちらです。
 
-https://next-blog.croud.jp/contents/b9a80cee-4803-4fd1-912a-2610c2aa4d70
+https://zenn.dev/sora_kumo/articles/deno-wasm-image-optimization
