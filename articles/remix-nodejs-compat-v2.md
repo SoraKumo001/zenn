@@ -1,5 +1,5 @@
 ---
-title: "Cloudflare の nodejs_compat_v2 を有効にして prisma から pg を使う"
+title: "Cloudflare の nodejs_compat_v2 を有効にし prisma から pg を使う"
 emoji: "🙌"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [cloudflare, prisma, pg, nodejs_compat_v2, remix]
