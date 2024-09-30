@@ -1,5 +1,5 @@
 ---
-title: "Vite@6 で Remix + Prisma が動く Cloudflare の HMR 対応開発環境を作る"
+title: "Vite@6 で Cloudflare の HMR 対応開発環境を作り、Remix + Prisma を動かす"
 emoji: "🙌"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [vite, remix, cloudflare, workerd, prisma]
