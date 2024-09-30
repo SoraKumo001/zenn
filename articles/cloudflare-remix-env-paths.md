@@ -6,6 +6,14 @@ topics: [cloudflare, remix, prisma, vite, deno]
 published: true
 ---
 
+---
+
+※ 2024/09/30 追記
+開発コードを Workerd ランタイムで動作させて、環境を統一する方法を記事にしました。詳しくは以下のリンクを参照してください。
+https://zenn.dev/sora_kumo/articles/remix-prisma-vite-miniflare
+
+---
+
 # Remix + Cloudflare で Prisma を使う場合の問題点
 
 Prisma を使う場合に必要になるパッケージ
