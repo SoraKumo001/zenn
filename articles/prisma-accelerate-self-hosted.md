@@ -24,12 +24,6 @@ https://www.prisma.io/pricing
 
 https://www.npmjs.com/package/prisma-accelerate-local
 
-## 2024/10/13 時点での問題点
-
-https://github.com/prisma/prisma-engines/pull/5002
-
-上記の Pull Request により、PostgreSQL の Prisma Engine が 圧縮サイズで 1MB を超えました。これにより Cloudflare の無料プランでは使用不能です。この PR が適用されたのは@prisma/client@5.20.0 からです。そのため、PostgreSQL 用の SelfHost を Cloudflare の無料プラン で行う場合、@prisma/client@5.19.1 を使用する必要があります。
-
 ## Cloudflare と Deno Deploy でサンプル
 
 サンプルは PostgreSQL を使用していますが、他の DB でも同様の方法で利用できます。以下のリポジトリを Deploy すれば、Prisma Accelerate を Self Hosting できます。あとは、発行されたアドレスに対してリクエストを送るだけで、Prisma Accelerate を利用できます。
@@ -44,7 +38,7 @@ https://github.com/SoraKumo001/prisma-accelerate-deno
 
 https://github.com/SoraKumo001/prisma-accelerate-workers
 
-[無料枠](https://developers.cloudflare.com/workers/platform/pricing/)で 10 万/日 リクエストまで利用できます。無料プランでは圧縮時のコードサイズが 1MB を超えるとエラーが発生するため、Prisma Engine のサイズに注意が必要です。PostgreSQL を使用する場合は package.json の resolutions で、バージョンを 5.19.1 に固定してください。
+[無料枠](https://developers.cloudflare.com/workers/platform/pricing/)で 10 万/日 リクエストまで利用できます。無料プランでは圧縮時のコードサイズが 1MB を超えるとエラーが発生するため、Prisma Engine のサイズに注意が必要です。
 
 ## Self Hosting のコード解説
 
