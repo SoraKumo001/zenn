@@ -1,5 +1,5 @@
 ---
-title: "Next.js@15 の AppRouter の Client Component のみで SSR を行う"
+title: "Next.js@15 の AppRouter で Client Component のみの SSR を行う"
 emoji: "🐙"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [react, nextjs, approuter, typescript, ssr]
@@ -55,6 +55,8 @@ export default function RootLayout({
 - src/app/page.tsx
 
 データ取得と表示を行うコンポーネントを作成します。コンポーネント上で使用している非同期処理は SSR され、HTML で出力されると共にクライアントにも渡されます。もちろん`use client`です。
+
+Server Components と違って、クライアント側での再レンダリングや再 fetch も可能です。
 
 ```tsx
 "use client";
@@ -187,4 +189,4 @@ export default Page;
 
 # まとめ
 
-フレームワーク達よ、お前らのルールには従わない。
+フレームワーク達よ、お前らのルールには従わない 😇
