@@ -1,5 +1,5 @@
 ---
-title: "Cloudflare Workers / Pages の Deploy - NODE_ENV の罠"
+title: "Cloudflare Workers / Pages の Deploy ～ NODE_ENV の罠"
 emoji: "😊"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [react, remix, cloudflare, typescript, wrangler]
