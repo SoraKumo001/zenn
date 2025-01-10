@@ -64,7 +64,7 @@ https://github.com/SoraKumo001/hono-ssr-react/blob/master/packages/hono-ssr-reac
 
 Server 側で送った HTML 上にコンポーネントを Hydrate しています。これでクライアント側で React が動きます。
 
-https://github.com/SoraKumo001/hono-ssr-react/blob/master/packages/hono-ssr-react/src/client.ts
+https://github.com/SoraKumo001/hono-ssr-react/blob/master/packages/hono-ssr-react/src/client.tsx
 
 ### src/App.tsx
 
