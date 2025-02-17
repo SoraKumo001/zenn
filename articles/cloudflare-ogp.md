@@ -3,7 +3,7 @@ title: "Cloudflare Workers で OGP 画像を生成する"
 emoji: "📚"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [cloudflare, workers, ogp, react, satori]
-published: false
+published: true
 ---
 
 # OGP 画像生成に使うライブラリ
