@@ -14,7 +14,7 @@ published: true
 
 JavaScript は大量のビットデータの扱いには強くありませんが、WebAssembly は SIMD（Single Instruction, Multiple Data）などを使い、並列処理をサポートしています。これにより、画像変換のような重い計算を高速化できます。また、WebAssembly はブラウザだけでなく、Node.js や Deno など他の環境でも利用可能です。
 
-今回は Emscripten を使用して C++でコンパイルを行います。WebAssembly に関して Rust の情報が多いですが、画像変換においては C++ の方が高速化しやすいという理由から、Emscripten をおすすめします。
+今回は Emscripten を使用して C++でコンパイルを行います。WebAssembly に関して Rust の情報が多いですが、画像変換においては C++ の方が高速化しやすいという理由から、Emscripten をオススメします。
 
 # マルチスレッド処理
 
@@ -32,9 +32,9 @@ https://www.npmjs.com/package/wasm-image-optimization
 
 # wasm と WebWorkers 環境の問題
 
-面倒なのが WebAssembly の wasm バイナリを実行するための動作が、環境によって異なるという問題があります。Cloudflare Workers は wasm を import で処理しなければならず、Next.js(WebPack) や React Router(Vite) でバイナリが素直にバンドルされません。それぞれの環境に合わせて色々調整しています。さらに WebWorkers の使用時に js ファイルが単独でバンドルされる必要があるため、その点でも注意が必要です。Vite に関しては node_module 内の調整ではどうにもならなかったので、敗北を受け入れ Vite 用のプラグインを作りました。
+面倒なのが WebAssembly の wasm バイナリを実行するための動作が、環境によって異なるという問題があります。Cloudflare Workers は wasm を import で処理しなければならず、Next.js(webpack) や React Router(Vite) でバイナリが素直にバンドルされません。それぞれの環境に合わせて色々調整しています。さらに WebWorkers の使用時に js ファイルが単独でバンドルされる必要があるため、その点でも注意が必要です。Vite に関しては node_module 内の調整ではどうにもならなかったので、敗北を受け入れ Vite 用のプラグインを作りました。
 
-その関係で package.json の exports 設定がカオスです。ライブラリ利用者側は特に細かいことを考えなくとも使えます。
+その関係で package.json の exports 設定がカオスです。ライブラリ利用者側はとくに細かいことを考えなくとも使えます。
 
 https://github.com/node-libraries/wasm-image-optimization/blob/master/package.json
 
@@ -315,4 +315,4 @@ main();
 
 # まとめ
 
-WebAssembly や WebWorkers で高速化できるという話はあれど、なかなか具体的な活用事例が出てこないので、あらゆる環境で実際に動作するようにしました。実装コードやサンプルは一通り揃えました。
+WebAssembly や WebWorkers で高速化できるという話はあれど、なかなか具体的な活用事例が出てこないので、あらゆる環境で実際に動作するようにしました。実装コードやサンプルはひととおり揃えました。
