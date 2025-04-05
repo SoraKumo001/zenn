@@ -2,21 +2,33 @@
 title: "Prisma Studio の GraphQL 版を作ってみる"
 emoji: "🔥"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: []
+topics: [prisma, graphql]
 published: false
 ---
 
 # Prisma Studio とは
 
-Prisma Studio は、Prisma が提供する GUI ツールです。Prisma が提供する ORM ライブラリを使って作成したデータベースの内容を確認・編集することができます。ただ、DB の内容の表示や操作に関して Prisma の要素は一切ありません。ただの DB 操作ツールです。
+Prisma Studio は、Prisma が提供する GUI ツールです。Prisma が提供する ORM ライブラリを使って作成したデータベースの内容を確認・編集できます。ただ、DB の内容の表示や操作に関して Prisma の要素は一切ありません。ただの DB 操作ツールです。
 
 # Prisma Studio の GraphQL 版を作ってみる
 
-Prisma の以前のバージョンではエンジン部分のプロトコルに GraphQL が使われていました。そのため Prisma の文法と GraphQL の文法は類似要素が多くなっています。そのため、Prisma を扱うのに近い形で GraphQL のクエリを作成することが出来ます。
+Prisma の以前のバージョンではエンジン部分のプロトコルに GraphQL が使われていました。Prisma の文法と GraphQL の文法は類似要素が多くなっています。そのため、Prisma を扱うのに近い形で GraphQL のクエリを作成できます。
 
 ## 作成したパッケージです
 
 https://www.npmjs.com/package/prisma-studio-graphql
+
+## 使い方
+
+prisma を使用しているプロジェクト内で`prisma-studio-graphql`をインストール後、`npx prisma-studio-graphql`を実行します。  
+プロジェクト内で prisma が使用可能であれば、そのまま GraphQL で DB を操作可能です。
+
+```bash
+npm install -D prisma-studio-graphql
+npx prisma-studio-graphql
+```
+
+![](https://raw.githubusercontent.com/node-libraries/prisma-studio-graphql/master/document/image01.avif)
 
 ## 内部で使用しているパッケージ
 
@@ -85,7 +97,7 @@ export const prisma = new PrismaClient({
 
 - index.ts
 
-GraphQL Yoga に Schema を設定して Hono 経由で起動します。また、Playground に表示する Document を自動生成して、使用可能なクエリが一通り表示されるようにします。
+GraphQL Yoga に Schema を設定して Hono 経由で起動します。また、Playground に表示する Document を自動生成して、使用可能なクエリがひととおり表示されるようにします。
 
 ```ts
 #!/usr/bin/env node
@@ -126,13 +138,6 @@ serve({ fetch: app.fetch, port: 5556 });
 console.log("http://localhost:5556/");
 ```
 
-## 使い方
+# まとめ
 
-各プロジェクトで利用しているパッケージマネージャで`prisma-studio-graphql`をインストール後、`npx prisma-studio-graphql`を実行します。
-
-```bash
-npm install -D prisma-studio-graphql
-npx prisma-studio-graphql
-```
-
-![](https://raw.githubusercontent.com/node-libraries/prisma-studio-graphql/master/document/image01.avif)
+今回の内容を使うと、Web 上の GUI 環境で GraphQL を通して、Prisma の使用感に近い形で DB を操作できます。使い方は簡単なので、是非試してみてください。
