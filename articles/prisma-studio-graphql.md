@@ -3,7 +3,7 @@ title: "Prisma Studio の GraphQL 版を作ってみる"
 emoji: "🔥"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [prisma, graphql]
-published: false
+published: true
 ---
 
 # Prisma Studio とは
