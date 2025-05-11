@@ -8,6 +8,6 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
-    "zenn-cli": "^0.1.158"
+    "zenn-cli": "^0.1.159"
   }
 }
