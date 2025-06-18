@@ -3,7 +3,7 @@ title: "Prisma queryCompiler の誤解を解く"
 emoji: "🔖"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [prisma, hono, pothos, cloudflare, graphql]
-published: false
+published: true
 ---
 
 # queryCompiler は no rust ではない
