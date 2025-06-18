@@ -66,8 +66,24 @@ Cloudflare にデプロイする場合、queryCompiler を有効にしたほう�
 
 ![](/images/prisma-query-compiler/2025-06-18-09-31-48.png)
 
+## 圧縮時のサイズ比較
+
+| 種類          | 圧縮前サイズ | 圧縮後サイズ |
+| ------------- | ------------ | ------------ |
+| queryCompiler | 1,887KB      | 723KB        |
+| queryEngine   | 2,226KB      | 870KB        |
+
+## Cloudflare のサイズ制限
+
+https://developers.cloudflare.com/workers/platform/limits/
+
+| プラン     | 圧縮後サイズ |
+| ---------- | ------------ |
+| Free(無料) | 3MB          |
+| Paid(有料) | 10MB         |
+
 # まとめ
 
-Cloudflare で Prisma を使う場合、queryCompiler を有効にしても、相変わらず巨大な wasm ファイルをデプロイに含める必要があります。ただ、現在 CloudflareWorkers のフリープランでの圧縮サイズ制限は 3MB あります。圧縮サイズ 700KB ちょっとの wasm を含めても、それほどギリギリにはなりません。PrismaEngine 版の wasm でも 800KB ちょっとです。有料プランなら最大容量は 10MB あるので、このサイズなら困ることはありません。
+Cloudflare で Prisma を使う場合、queryCompiler を有効にしても、相変わらず巨大な wasm ファイルをデプロイに含める必要があります。ただ、現在 CloudflareWorkers のフリープランでの圧縮サイズ制限は 3MB あります。圧縮サイズ 723KB の wasm を含めても、それほどギリギリにはなりません。PrismaEngine 版の wasm でも 870KB です。有料プランなら最大容量は 10MB あるので、このサイズなら困ることはありません。
 
 結論として、現時点 Prisma を Cloudflare で使うなら、サイズも大して変わらないので、安定している PrismaEngine の wasm 版を使うのが無難そうです。
