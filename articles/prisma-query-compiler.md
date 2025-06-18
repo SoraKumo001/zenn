@@ -66,14 +66,9 @@ Cloudflare にデプロイする場合、queryCompiler を有効にしたほう�
 
 ![](/images/prisma-query-compiler/2025-06-18-09-31-48.png)
 
-## 圧縮時のサイズ比較
-
-| 種類          | 圧縮前サイズ | 圧縮後サイズ |
-| ------------- | ------------ | ------------ |
-| queryCompiler | 1,887KB      | 723KB        |
-| queryEngine   | 2,226KB      | 870KB        |
-
 ## Cloudflare のサイズ制限
+
+古い情報だとフリープランが 1MB となっていることがありますが、2024 年 11 月の時点で 3MB です。
 
 https://developers.cloudflare.com/workers/platform/limits/
 
@@ -81,6 +76,15 @@ https://developers.cloudflare.com/workers/platform/limits/
 | ---------- | ------------ |
 | Free(無料) | 3MB          |
 | Paid(有料) | 10MB         |
+
+## wasm ファイルの圧縮時のサイズ比較
+
+フリープランでも 3MB 使えるので、サイズがぎりぎりになることはまずありません。
+
+| 種類          | 圧縮前サイズ | 圧縮後サイズ |
+| ------------- | ------------ | ------------ |
+| queryCompiler | 1,887KB      | 723KB        |
+| queryEngine   | 2,226KB      | 870KB        |
 
 # まとめ
 
