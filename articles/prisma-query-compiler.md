@@ -58,7 +58,7 @@ generator client {
 
 - queryCompiler を無効にした場合
 
-`query_engine_bg.wasm`が Rust で書かれた Prisma Engine です。2.226KB あります。
+`query_engine_bg.wasm`が Rust で書かれた Prisma Engine です。2,226KB あります。
 
 ![](/images/prisma-query-compiler/2025-06-18-09-26-37.png)
 
