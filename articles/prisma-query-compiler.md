@@ -14,16 +14,16 @@ Prisma 公式 Blog が誤解を招く内容を発信しているところが問�
 
 https://www.prisma.io/blog/prisma-6-9-0-release#prisma-orm-without-rust-engines-for-postgresql--sqlite-preview
 
-また、queryCompiler の動作確認をするときに気をつけなければならないのは、Prisma が公式で PostgreSQL の DB を提供しているサービス、`prisma-postgres`を使用してはならないということです。このサービス、一般的な PostgreSQL の機能ではなく、Prisma Accelerate による PrismaEngine を含んだ Prisma 独自のサービスです。このサービスを使うと、リモートで PrismaEngine が動作するので、手元にある queryCompiler を使いません。prisma.schema で `previewFeatures = ["queryCompiler"]`を設定しても意味がないのです。
+また、queryCompiler の動作確認をするときに気をつけなければならないのは、Prisma が公式で PostgreSQL の DB を提供しているサービス、`Prisma Postgres`を使用してはならないということです。このサービス、一般的な PostgreSQL の機能ではなく、Prisma Accelerate による PrismaEngine を含んだ Prisma 独自のサービスです。このサービスを使うと、リモートで PrismaEngine が動作するので、手元にある queryCompiler を使いません。prisma.schema で `previewFeatures = ["queryCompiler"]`を設定しても意味がないのです。
 
-ちなみに PrismaEngine をリモートに分離する方法は、公式の`Prisma Accelerate`や`prisma-postgres`の他に、セルフホストするために以下の物を作っています。ただしこれを使うと queryCompiler を使用する必要がなくなります。
+ちなみに PrismaEngine をリモートに分離する方法は、公式の`Prisma Accelerate`や`Prisma Postgres`の他に、セルフホストするために以下の物を作っています。ただしこれを使うと queryCompiler を使用する必要がなくなります。
 
 https://www.npmjs.com/package/prisma-accelerate-local
 
 ## 重要な点
 
 - queryCompiler は Rust で書かれている
-- `prisma-postgres`は PrismaEngine を含んだ Prisma 専用のサービスであり、queryCompiler を使わない
+- `Prisma Postgres`は PrismaEngine を含んだ Prisma 専用のサービスであり、queryCompiler を使わない
 
 # queryCompiler の使い方
 
