@@ -1,13 +1,21 @@
 ---
-title: "unified を使って Markdown を React コンポーネントへ変換する"
+title: "React 用 Markdown エディタと unified の Plugin 作成"
 emoji: "👻"
 type: "tech" # tech: 技術記事 / idea: アイデア
-topics: []
-published: false
+topics: [react, markdown, unified, typescript, nextjs]
+published: true
 ---
 
-※ 今回の記事に使用しているソースコード
-https://github.com/SoraKumo001/react-router-markdown
+# React での Markdown エディタの実装
+
+テキストエディット部分には Monaco エディタ、Markdown パーサには unified を使用します。その際に必要になる Plugin の作り方も合わせて紹介します。
+
+※ 今回の記事で使用しているソースコード
+
+- Next.js 板  
+  https://github.com/SoraKumo001/next-unified
+- React Router 板
+  https://github.com/SoraKumo001/react-router-markdown
 
 ![](/images/markdown-react/capture.webp)
 
@@ -18,6 +26,39 @@ https://github.com/SoraKumo001/react-router-markdown
 - 特定の文書フォーマットを抽象構文木（AST）で扱うためのライブラリ
 - プラグインによって拡張していく
 - 単体では動作しない
+
+## Markdown 変換 AST の流れ
+
+| フェーズ    | 処理内容                     | プラグイン    | ベースライブラリ         |
+| ----------- | ---------------------------- | ------------- | ------------------------ |
+| Parser      | Markdown を AST に変換       | remark-parse  | mdast                    |
+| Transformer | HTML の構造に近い AST に変換 | remark-rehype | hast                     |
+| Compiler    | ReactComponent に変換        | rehype-react  | hast-util-to-jsx-runtime |
+
+mdast と hast に関してはプラグインが呼び出すため、直接使用することはありませんが、プラグインを作成するときに TypeScript の型情報が必要になるため、`@types/mdast`や`@types/hast`が必要になります。
+
+# unified を使う最低限の記述
+
+最低限の実装は以下のようになります。`rehype-react`は`react/jsx-runtime`のインスタンスを必要とするので注意してください。
+
+```ts
+import prod from "react/jsx-runtime";
+import rehypeReact from "rehype-react";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import { unified } from "unified";
+
+export const markdownConverter = unified()
+  // MDAST(マークダウンASTに変換)
+  .use(remarkParse)
+  // HAST(HTML用のASTに変換)
+  .use(remarkRehype)
+  // Reactコンポーネントに変換
+  .use(rehypeReact, {
+    ...prod,
+  })
+  .processSync("markdown");
+```
 
 ## 記事の有効性判別
 
@@ -35,40 +76,6 @@ import { unified } from "unified";
 import unified from "unified";
 ```
 
-## Markdown 変換 AST の流れ
-
-| フェーズ    | 処理内容                     | プラグイン    |
-| ----------- | ---------------------------- | ------------- |
-| Parser      | Markdown を AST に変換       | remark-parse  |
-| Transformer | HTML の構造に近い AST に変換 | remark-rehype |
-| Compiler    | ReactComponent に変換        | rehype-react  |
-
-Markdown を React コンポーネントへ変換する手段として`unified`に必要なプラグインがあらかじめ組み込まれている`react-markdown`を使うという選択肢もありますが、カスタマイズすることを考えると、直接`unified`を扱った方が柔軟性が増します。
-
-## mdast に関して
-
-`remark-parse`による Markdown の変換は内部で`mdast`を使用しています。直接パッケージを使うことは非推奨となっているようですが、`remark-parse`以降の AST を TypeScript で操作する場合は、`@types/mdast`が必要になります。
-
-# unified を使う最低限の記述
-
-最低限の実装は以下のようになります。`rehype-react`は`react/jsx-runtime`のインスタンスを必要とするので注意してください。
-
-```ts
-import prod from "react/jsx-runtime";
-import rehypeReact from "rehype-react";
-import remarkParse from "remark-parse";
-import remarkRehype from "remark-rehype";
-import { unified } from "unified";
-
-export const markdownConverter = unified()
-  .use(remarkParse)
-  .use(remarkRehype)
-  .use(rehypeReact, {
-    ...prod,
-  })
-  .processSync("markdown");
-```
-
 # unified をカスタマイズして使う
 
 ## 基本部分
@@ -78,9 +85,9 @@ export const markdownConverter = unified()
 - remark 系:`remark-parse`が変換した mdast の AST を扱う
 - rehype 系:`remark-rehype`が変換した hast の AST を扱う
 
-プラグインで AST を扱う時、最初は汎用的な文章フォーマット用の AST だったのが、途中で HTML よりの AST に変換されます。そのため、プラグインを組み込み順序に注意が必要になります。
+プラグインで AST を扱う時、最初は汎用的な文章フォーマット用の AST だったのが、途中で HTML に近い AST に変換されます。そのため、プラグインを組み込み順序に注意が必要になります。
 
-追加で`compilerResultTree`というプラグインを入れています。変換最終段階で`rehype-react`が React ノードを出力するのですが、この部分を細工して MastRoot の情報も出力させています。これによってヘッダ項目の一覧が表示可能になります。
+追加で`compilerResultTree`というプラグインを入れています。変換最終段階で`rehype-react`が React ノードを出力するのですが、この部分を細工して MastRoot の情報も出力させています。これによってヘッダ項目の一覧を取り出し様な、柔軟なデータ利用が可能になります。
 
 ```tsx
 import rehypeRaw from "rehype-raw";
@@ -108,7 +115,7 @@ export const markdownCompiler: Processor<
   undefined,
   [ReactNode, Root]
 > = unified()
-  // ASTの作成
+  // MDAST(マークダウンASTに変換)
   .use(remarkParse)
   // 表やテキスト中のリンクなど変換を追加
   .use(remarkGfm)
@@ -140,11 +147,11 @@ export const markdownCompiler: Processor<
 
 ## プラグインの作り方
 
-remark 系と rehype 系で、操作する AST の構造が異なります。
+remark 系と rehype 系で、操作する AST の構造が異なります。また、付加する情報の規則も違うので注意が必要です。
 
 ### 空行を復元
 
-Markdown の標準仕様では空行が連続で続いた場合は除去されます。これを復元するプラグインです。ノードが存在しないポジションを確認して、改行を挿入しています。
+Markdown の標準仕様では空行が連続で続いた場合は除去されます。これを復元するプラグインです。ノードが存在しないポジションを計算して、改行を挿入しています。
 
 ```ts
 import type { Root as MdastRoot, RootContent } from "mdast";
@@ -193,7 +200,7 @@ export const remarkEmptyParagraphs: Plugin = () => {
 
 ### ヘッダに ID とリンクを付ける
 
-ヘッダに対するページ内リンクを作成します。これによって、ページ内の特定の見出しにリンクが可能になります。
+ヘッダにテキスト情報を ID として埋め込みます。これによって、ページ内の特定の見出しにリンクが可能になります。
 
 ```ts
 import { visit } from "unist-util-visit";
@@ -450,6 +457,29 @@ export const rehypeReactOptions: RehypeReactOptions = {
 };
 ```
 
+### 出力結果に追加情報を与える
+
+`processSync`などでの最終的な出力結果をコンポーネントのみから、mdast のツリー情報も一緒に返すようにカスタマイズします。これにより、ツリー情報を利用した特殊な表示などに対応可能になります。
+
+```ts
+import type { Root } from "mdast";
+import type { Processor } from "unified";
+
+export function compilerResultTree(this: Processor<Root, Root, Root, Root>) {
+  const originalCompiler = this.compiler;
+  const originalParse = this.parse;
+  let mdastTree: Root | undefined;
+  this.parse = function (...args) {
+    const tree = originalParse.apply(this, args) as Root;
+    mdastTree = tree;
+    return tree;
+  };
+  this.compiler = (...props) => {
+    return [originalCompiler?.apply(this, props), mdastTree];
+  };
+}
+```
+
 ### スタイル設定
 
 Markdown 表示用のスタイルを一括設定します
@@ -564,7 +594,9 @@ Markdown 表示用のスタイルを一括設定します
 }
 ```
 
-## テキストエディタとの連携
+# テキストエディタとの連携
+
+## Monaco エディタの使用
 
 テキストエディタには扱いが簡単な Monaco エディタを使用します
 
