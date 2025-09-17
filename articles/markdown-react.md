@@ -12,10 +12,15 @@ published: true
 
 ※ 今回の記事で使用しているソースコード
 
-- Next.js 板  
-  https://github.com/SoraKumo001/next-unified
+- Next.js 板
+
+https://github.com/SoraKumo001/next-unified
+
 - React Router 板
-  https://github.com/SoraKumo001/react-router-markdown
+
+https://github.com/SoraKumo001/react-router-markdown
+
+- 動作イメージ
 
 ![](/images/markdown-react/capture.webp)
 
