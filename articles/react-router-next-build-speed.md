@@ -22,7 +22,7 @@ https://github.com/SoraKumo001/react-router-markdown
 
 手元の環境でビルドさせてみた結果
 
-Next.js は`--no-lint`オプションと`ignoreBuildErrors: true`を追加して、eslint と TypeCheck を省いています。
+Next.js は React Router のビルドと同じ条件になるように`--no-lint`オプションと`ignoreBuildErrors: true`を追加して、eslint と TypeCheck を省いています。
 
 | フレームワーク | バージョン | バンドラ                    |   速度 |
 | -------------- | ---------- | --------------------------- | -----: |
