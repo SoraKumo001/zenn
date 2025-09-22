@@ -1,5 +1,5 @@
 ---
-title: "Next.js の Client Componentで async/await を使う"
+title: "Next.js の Client Component で async/await を使う"
 emoji: "🐷"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [nextjs, react, typescript, javascript, approuter]
