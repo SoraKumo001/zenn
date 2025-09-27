@@ -57,7 +57,7 @@ import serverAdapter, { defaultOptions } from "@hono/vite-dev-server";
 import type { cloudflareAdapter } from "@hono/vite-dev-server/cloudflare";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
-import { getPlatformProxy, unstable_getVarsForDev } from "wrangler";
+import { getPlatformProxy } from "wrangler";
 
 // Entry file
 const entry = "./workers/app.ts";
@@ -91,7 +91,11 @@ export default defineConfig({
       adapter,
       entry,
       // Asset adjustment
-      exclude: [...defaultOptions.exclude, /\.(webp|png|svg)(\?.*)?$/],
+      exclude: [
+        ...defaultOptions.exclude,
+        "/app/**",
+        /\.(css|webp|png|svg)(\?.*)?$/,
+      ],
       // HMR adjustment
       handleHotUpdate: ({ server, modules }) => {
         const isServer = modules.some((mod) => {
