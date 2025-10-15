@@ -200,3 +200,7 @@ createRoot(document.body).render(<App />);
 # まとめ
 
 取り急ぎ、動くものを作って動作を確認してみました。興味のある人は是非いじってみてください。
+
+# 続き
+
+https://zenn.dev/sora_kumo/articles/remix3-samples2
