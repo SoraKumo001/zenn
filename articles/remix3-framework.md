@@ -737,9 +737,9 @@ SSR での動作が確認できます。ただ Remix3 のバグでテキスト�
 
 https://remix3-sample06.mofon001.workers.dev/
 
-![](/images/remix3-ssr/2025-10-21-09-33-37.png)
+![](/images/remix3-framework/2025-10-21-09-33-37.png)
 
-![](/images/remix3-ssr/2025-10-21-09-34-02.png)
+![](/images/remix3-framework/2025-10-21-09-34-02.png)
 
 # まとめ
 
