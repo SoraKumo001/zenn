@@ -91,7 +91,7 @@ export default defineConfig(({ isSsrBuild }) => {
 
 ## ファイルベースルーティング用の Vite プラグインを作成
 
-現時点において Remix3 に Vite 経由のファイルベースルーティング機能はありません。不便なので`./src/routes`にあるファイルリストを元にルーティングを行う仮想モジュールのプラグインを自作します。使い方は`React Router`に寄せてあります。
+現時点において Remix3 に Vite 経由のファイルベースルーティング機能はありません。不便なので`./src/routes`にあるファイルリストを元にルーティングを行う仮想モジュールのプラグインを自作します。使い方は`React Router`に寄せてあります。パスパラメータで slug を取得する機能も入れてあります。
 
 - vite-plugin/remix-routes.ts
 
