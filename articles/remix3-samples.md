@@ -6,6 +6,10 @@ topics: [remix, remix3, react, typescript, rolldown]
 published: true
 ---
 
+※ Remix3 のフレームワーク実装の記事
+
+https://zenn.dev/sora_kumo/articles/remix3-framework
+
 # Remix3 とは
 
 Remix 3 は、React から脱却し、Web 標準に基づいた新しいフルスタック Web フレームワークとして再設計されました。Remix 3 は鋭意開発中ですが、この記事では React 代替に相当する箇所を部分的に動かして、実際に動作を検証してみます。
