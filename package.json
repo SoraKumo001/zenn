@@ -1,5 +1,6 @@
 {
   "name": "zenn",
+  "type": "module",
   "scripts": {
     "start": "zenn",
     "new": "zenn new:article"
@@ -8,6 +9,6 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
-    "zenn-cli": "^0.1.159"
+    "zenn-cli": "0.2.4"
   }
 }
