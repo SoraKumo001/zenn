@@ -92,7 +92,20 @@ https://www.prisma.io/blog/announcing-prisma-orm-7-0-0
 
 モジュールバンドラ対策です。WASM ファイルを直接読み込むコードがあると、あらゆる環境に対応させる必要があります。WASM ファイルがどう扱われるかは、モジュールバンドラの設定次第であり、あらゆる環境に対する対応地獄が待っています。これを解決する簡単な方法は、JavaScript 内に WASM のバイナリを内包しておき、実行時に WebAssembly として放り込むことです。
 
-Cloudflare のように WASM のモジュールファイルを直接読み込む必要のある環境では runtime の指定で、base64 から読み込むのを回避する必要があります。
+Cloudflare のように WASM のモジュールファイルを直接読み込む必要のある環境では runtime の指定で、base64 から読み込むのを回避する必要があります。ちなみに`runtime = "workerd"`のような指定をした場合、以下のようなコードが生成されます。
+
+```ts
+config.compilerWasm = {
+  getRuntime: async () => await import("./query_compiler_bg.js"),
+
+  getQueryCompilerWasmModule: async () => {
+    const { default: module } = await import("./query_compiler_bg.wasm?module");
+    return module;
+  },
+};
+```
+
+`?module`の部分は特定のモジュールバンドラに対する指示です。Cloudflare にはそのような指定方法は存在しません。つまりどういうことかというと、エラーを出して動きません。`provider = "prisma-client"`を指定して出力したコードは、直接自分で該当部分を削除しない限り動かないのです。
 
 # まとめ
 
