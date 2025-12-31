@@ -1,0 +1,262 @@
+<mxfile host="65bd71144e">
+    <diagram id="PrismaArchitecture" name="Page-1">
+        <mxGraphModel dx="1282" dy="1756" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="frame" value="" style="whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=none;" parent="1" vertex="1">
+                    <mxGeometry width="820" height="1020" as="geometry"/>
+                </mxCell>
+                <mxCell id="title1" value="1. PrismaEngine - RustNative" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=16;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="40" width="300" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="user1" value="ユーザーコード" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="120" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="client1" value="PrismaClient&lt;br&gt;(node_modules)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="120" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="engine1" value="PrismaEngine&#xa;(RustNative)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="120" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="db1" value="DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="110" width="60" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge1_1" value="Query param&#xa;(Object)" style="endArrow=classic;html=1;labelBackgroundColor=none;entryX=0;entryY=0.05;entryDx=0;entryDy=0;exitX=1;exitY=0.05;exitDx=0;exitDy=0;" parent="1" source="user1" target="client1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint y="-20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge1_2" value="Query param&#xa;(JSON)" style="endArrow=classic;html=1;labelBackgroundColor=none;entryX=0;entryY=0.05;entryDx=0;entryDy=0;exitX=1;exitY=0.05;exitDx=0;exitDy=0;" parent="1" source="client1" target="engine1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint y="-20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge1_3" value="SQL" style="endArrow=classic;html=1;labelBackgroundColor=none;entryX=0;entryY=0.05;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.05;exitDx=0;exitDy=0;" parent="1" source="engine1" target="db1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint y="-20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge1_4" value="ResultSet" style="endArrow=classic;html=1;labelBackgroundColor=none;dashed=1;entryX=1;entryY=0.95;entryDx=0;entryDy=0;exitX=0;exitY=0.95;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="db1" target="engine1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint y="20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge1_5" value="ResultSet&#xa;(JSON)" style="endArrow=classic;html=1;labelBackgroundColor=none;dashed=1;entryX=1;entryY=0.95;entryDx=0;entryDy=0;exitX=0;exitY=0.95;exitDx=0;exitDy=0;" parent="1" source="engine1" target="client1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint y="20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge1_6" value="ResultSet&#xa;(Object)" style="endArrow=classic;html=1;labelBackgroundColor=none;dashed=1;entryX=1;entryY=0.95;entryDx=0;entryDy=0;exitX=0;exitY=0.95;exitDx=0;exitDy=0;" parent="1" source="client1" target="user1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint y="20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="title2" value="2. PrismaEngine - RustWasm" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=16;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="240" width="300" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="user2" value="ユーザーコード" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="320" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="client2" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;PrismaClient&lt;/span&gt;&lt;div&gt;(node_modules)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="320" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="engine2" value="PrismaEngine&#xa;(RustWasm)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="320" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="adapter2" value="Adapter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="580" y="320" width="100" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="db2" value="DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="310" width="60" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge2_1" value="Query param&#xa;(Object)" style="endArrow=classic;html=1;labelBackgroundColor=none;entryX=0;entryY=0.05;entryDx=0;entryDy=0;exitX=1;exitY=0.05;exitDx=0;exitDy=0;" parent="1" source="user2" target="client2" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint y="-20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge2_2" value="Query param&#xa;(JSON)" style="endArrow=classic;html=1;labelBackgroundColor=none;entryX=0;entryY=0.05;entryDx=0;entryDy=0;exitX=1;exitY=0.05;exitDx=0;exitDy=0;" parent="1" source="client2" target="engine2" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint y="-20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge2_3" value="SQL" style="endArrow=classic;html=1;labelBackgroundColor=none;entryX=0;entryY=0.05;entryDx=0;entryDy=0;exitX=1;exitY=0.05;exitDx=0;exitDy=0;" parent="1" source="engine2" target="adapter2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint y="-20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge2_4" value="SQL" style="endArrow=classic;html=1;labelBackgroundColor=none;entryX=0;entryY=0.05;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.05;exitDx=0;exitDy=0;" parent="1" source="adapter2" target="db2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint y="-20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge2_5" value="ResultSet" style="endArrow=classic;html=1;labelBackgroundColor=none;dashed=1;entryX=1;entryY=0.95;entryDx=0;entryDy=0;exitX=0;exitY=0.95;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="db2" target="adapter2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint y="20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge2_6" value="ResultSet&lt;br&gt;(JSON)" style="endArrow=classic;html=1;labelBackgroundColor=none;dashed=1;entryX=1;entryY=0.95;entryDx=0;entryDy=0;exitX=0;exitY=0.95;exitDx=0;exitDy=0;" parent="1" source="adapter2" target="engine2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint y="20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge2_7" value="ResultSet&#xa;(JSON)" style="endArrow=classic;html=1;labelBackgroundColor=none;dashed=1;entryX=1;entryY=0.95;entryDx=0;entryDy=0;exitX=0;exitY=0.95;exitDx=0;exitDy=0;" parent="1" source="engine2" target="client2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint y="20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge2_8" value="ResultSet&#xa;(Object)" style="endArrow=classic;html=1;labelBackgroundColor=none;dashed=1;entryX=1;entryY=0.95;entryDx=0;entryDy=0;exitX=0;exitY=0.95;exitDx=0;exitDy=0;" parent="1" source="client2" target="user2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint y="20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="title3" value="3. QueryCompiler - RustWasm" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=16;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="440" width="300" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="user3" value="ユーザーコード" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="550" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="client3" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;PrismaClient&lt;/span&gt;&lt;br&gt;(node_modules)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="550" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="compiler3" value="QueryCompiler&#xa;(RustWasm)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="480" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="adapter3" value="Adapter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="580" y="620" width="100" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="db3" value="DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="610" width="60" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge3_1" value="Query param&#xa;(Object)" style="endArrow=classic;html=1;labelBackgroundColor=none;entryX=0;entryY=0.05;entryDx=0;entryDy=0;exitX=1;exitY=0.05;exitDx=0;exitDy=0;" parent="1" source="user3" target="client3" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint y="-20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge3_2" value="Query param&#xa;(JSON)" style="endArrow=classic;html=1;labelBackgroundColor=none;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0.75;exitY=0;exitDx=0;exitDy=0;curved=1;" parent="1" source="client3" target="compiler3" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="390" y="500"/>
+                        </Array>
+                        <mxPoint y="-10" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge3_3" value="SQL" style="endArrow=classic;html=1;labelBackgroundColor=none;dashed=1;entryX=1;entryY=0;entryDx=0;entryDy=0;exitX=0;exitY=0.75;exitDx=0;exitDy=0;curved=1;" parent="1" source="compiler3" target="client3" edge="1">
+                    <mxGeometry x="0.1065" y="6" relative="1" as="geometry">
+                        <mxPoint y="10" as="offset"/>
+                        <Array as="points">
+                            <mxPoint x="450" y="530"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge3_4" value="SQL" style="endArrow=classic;html=1;labelBackgroundColor=none;entryX=0;entryY=0.25;entryDx=0;entryDy=0;exitX=0.75;exitY=1;exitDx=0;exitDy=0;curved=1;" parent="1" source="client3" target="adapter3" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="390" y="645"/>
+                        </Array>
+                        <mxPoint y="-10" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge3_5" value="SQL" style="endArrow=classic;html=1;labelBackgroundColor=none;entryX=0;entryY=0.05;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.05;exitDx=0;exitDy=0;" parent="1" source="adapter3" target="db3" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint y="-20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge3_6" value="ResultSet" style="endArrow=classic;html=1;labelBackgroundColor=none;dashed=1;entryX=1;entryY=0.95;entryDx=0;entryDy=0;exitX=0;exitY=0.95;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="db3" target="adapter3" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint y="20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge3_7" value="ResultSet&#xa;(Object)" style="endArrow=classic;html=1;labelBackgroundColor=none;dashed=1;entryX=1;entryY=1;entryDx=0;entryDy=0;exitX=0;exitY=0.75;exitDx=0;exitDy=0;curved=1;" parent="1" source="adapter3" target="client3" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="430" y="675"/>
+                        </Array>
+                        <mxPoint y="10" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge3_8" value="ResultSet&#xa;(Object)" style="endArrow=classic;html=1;labelBackgroundColor=none;dashed=1;entryX=1;entryY=0.95;entryDx=0;entryDy=0;exitX=0;exitY=0.95;exitDx=0;exitDy=0;" parent="1" source="client3" target="user3" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint y="20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="title4" value="4. QueryCompiler - RustWasm - TypeScript" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=16;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="740" width="400" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="group4" value="" style="group" parent="1" vertex="1" connectable="0">
+                    <mxGeometry x="40" y="820" width="340" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="box4" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;dashed=1;" parent="group4" vertex="1">
+                    <mxGeometry width="340" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="user4" value="ユーザーコード" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" parent="group4" vertex="1">
+                    <mxGeometry x="20" y="20" width="100" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="client4" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;PrismaClient&lt;/span&gt;&lt;div&gt;(TypeScript)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="group4" vertex="1">
+                    <mxGeometry x="200" y="20" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge4_0a" value="Query param&#xa;(Object)" style="endArrow=classic;html=1;labelBackgroundColor=none;entryX=0;entryY=0.05;entryDx=0;entryDy=0;exitX=1;exitY=0.05;exitDx=0;exitDy=0;" parent="group4" source="user4" target="client4" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint y="-20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge4_0b" value="ResultSet&#xa;(Object)" style="endArrow=classic;html=1;labelBackgroundColor=none;dashed=1;entryX=1;entryY=0.95;entryDx=0;entryDy=0;exitX=0;exitY=0.95;exitDx=0;exitDy=0;" parent="group4" source="client4" target="user4" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint y="20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="compiler4" value="QueryCompiler&#xa;(RustWasm)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="770" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="adapter4" value="Adapter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="580" y="910" width="100" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="db4" value="DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="900" width="60" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge4_2" value="Query param&#xa;(JSON)" style="endArrow=classic;html=1;labelBackgroundColor=none;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0.75;exitY=0;exitDx=0;exitDy=0;curved=1;" parent="1" source="client4" target="compiler4" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="370" y="790"/>
+                        </Array>
+                        <mxPoint y="-10" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge4_3" value="SQL" style="endArrow=classic;html=1;labelBackgroundColor=none;dashed=1;entryX=1;entryY=0;entryDx=0;entryDy=0;exitX=0;exitY=0.75;exitDx=0;exitDy=0;curved=1;" parent="1" source="compiler4" target="client4" edge="1">
+                    <mxGeometry x="0.1065" y="6" relative="1" as="geometry">
+                        <mxPoint y="10" as="offset"/>
+                        <Array as="points">
+                            <mxPoint x="450" y="820"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge4_4" value="SQL" style="endArrow=classic;html=1;labelBackgroundColor=none;entryX=0;entryY=0.25;entryDx=0;entryDy=0;exitX=0.75;exitY=1;exitDx=0;exitDy=0;curved=1;" parent="1" source="client4" target="adapter4" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="370" y="935"/>
+                        </Array>
+                        <mxPoint y="-10" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge4_5" value="SQL" style="endArrow=classic;html=1;labelBackgroundColor=none;entryX=0;entryY=0.05;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.05;exitDx=0;exitDy=0;" parent="1" source="adapter4" target="db4" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint y="-20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge4_6" value="ResultSet" style="endArrow=classic;html=1;labelBackgroundColor=none;dashed=1;entryX=1;entryY=0.95;entryDx=0;entryDy=0;exitX=0;exitY=0.95;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="db4" target="adapter4" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint y="20" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge4_7" value="ResultSet&#xa;(Object)" style="endArrow=classic;html=1;labelBackgroundColor=none;dashed=1;entryX=1;entryY=1;entryDx=0;entryDy=0;exitX=0;exitY=0.75;exitDx=0;exitDy=0;curved=1;" parent="1" source="adapter4" target="client4" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="430" y="965"/>
+                        </Array>
+                        <mxPoint y="10" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
