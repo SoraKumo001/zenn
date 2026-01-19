@@ -3,284 +3,84 @@ title: "Drizzle ORM から PostgreSQL を使用する際に、環境変数から
 emoji: "📑"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [drizzle, prisma, postgresql, orm, database]
-published: false
+published: true
 ---
 
-# PostgreSQL の schema 切り替え
+# はじめに
 
-PostgreSQL は DB 上に schema を作成して、テーブルをその配下に配置できます。デフォルトでは public という名前がついていますが、これを新しく作ることによってひとつの DB に複数の同名のテーブルを作ることが可能になります。
+PostgreSQL には **Schema（スキーマ）** という概念があり、1 つのデータベース内に「名前空間」を作ってテーブルを管理できます。デフォルトでは `public` スキーマが使われますが、これを切り替えることで、たとえば「テナントごとにスキーマを分ける」「テスト実行時だけ隔離されたスキーマを使う」といった運用が可能になります。
 
-PostgreSQL でスキーマを指定は、テーブル名の前にスキーマ名を装飾するか、search_path にスキーマ名を設定することで行います。これが Prisma の Rust ネイティブのドライバだと、接続名のパラメータとして`?schema=xxxx`を付けることによって切り替えられます。これはあくまで Prisma の糖衣構文なので、その他の環境では動作しません。しかしこの機能が PostgreSQL の標準機能と誤解しており、この機能が動作しないと Issues に書き込んでいる人を見かけます。
+Prisma ユーザーにはおなじみですが、PostgreSQL の接続 URL に `?schema=my_schema` というパラメータを付けるだけで、接続先スキーマを切り替えられる機能があります。
+しかし、これはあくまで Prisma が独自に実装している機能（糖衣構文）であり、PostgreSQL のドライバ標準の仕様ではありません。そのため、他の ORM やツールでは同様に記述しても無視されてしまいます。
 
-今回は`?schema=xxxx`の機能を Drizzle から使えるように実装する方法を紹介します。drizzle-kit の対応がなされていない部分は、自分でコマンドを実装します。
+**Drizzle ORM** も例外ではなく、通常の方法（`pgSchema` でのハードコーディング）では動的なスキーマ切り替えが困難です。本記事では、Drizzle ORM において環境変数（接続 URL）から動的にスキーマを切り替える実装方法を紹介します。
 
-## Schema Example
+## サンプルプロジェクト
 
-このプロジェクトは、**Drizzle ORM** と **PostgreSQL** を使用して、データベースのスキーマを `?schema=xxxxxx` で切り替えるサンプルです。
+本記事で解説するコードの完成形は、以下のリポジトリで公開しています。
 
-https://github.com/SoraKumo001/drizzle-pg-schema
+[https://github.com/SoraKumo001/drizzle-pg-schema](https://github.com/SoraKumo001/drizzle-pg-schema)
 
-## サンプル用データベーススキーマ
+### 使用技術
 
-以下のモデル（テーブル）が定義されています（`src/db/schema.ts`）:
+- **Drizzle ORM / Drizzle Kit**: ORM およびマイグレーションツール
+- **PostgreSQL**: データベース
+- **Docker**: 実行環境
 
-- **User**: ユーザー情報（ID, Email, Name, Roles）
-- **Post**: 投稿記事（ID, Title, Content, Published, Author）
-- **Category**: カテゴリー (ID, Name)
-- **PostToCategory**: 投稿とカテゴリーの多対多リレーション
+---
 
-## セットアップ手順
+## 課題：なぜ標準機能だけでは足りないのか
 
-### 1. 依存関係のインストール
+Drizzle ORM で特定のスキーマを利用する場合、通常はスキーマ定義ファイル内で `pgSchema("my_schema")` を使って固定的に記述する必要があります。しかし、これでは開発・テスト・本番でスキーマ名を柔軟に変えたいニーズに対応できません。
 
-```bash
-pnpm install
-```
+PostgreSQL 自体には `search_path` という設定があり、これをセッション接続時に指定することでデフォルトのスキーマを変更できます。今回はこの `search_path` を活用しつつ、Drizzle Kit の CLI コマンド（`migrate` や `push`）では対応しきれない部分を**カスタムスクリプト**で補うことで解決します。
 
-### 2. 環境変数の設定
+---
 
-プロジェクトルートの `.env` ファイル内にある schema オプションを参照してスキーマを切り替えます。そもそものところで schema パラメータは Prisma の PostgreSQL の Rust エンジンで用いられる糖衣構文なので、他の ORM や DB ドライバなどではサポートされていません。これを Drizzle でサポート可能にするというのが今回の内容です。
+## 実装のポイント
 
-```env
-DATABASE_URL=postgres://postgres:password@localhost:5432/postgres?schema=xxxxxx
-```
+実装の核となるのは以下の 3 点です。
 
-### 3. データベースの起動
+1. **`drizzle.config.ts`**: 環境変数からスキーマ名を読み取る。
+2. **App 接続設定**: `search_path` オプションを付与して接続する。
+3. **カスタムスクリプト**: マイグレーションやシード実行時にスキーマを明示的に指定する。
 
-Docker を使用して PostgreSQL コンテナを起動します。
+### 1. 設定ファイル (`drizzle.config.ts`)
 
-```bash
-pnpm run docker
-```
+まず、`DATABASE_URL` から `?schema=xxx` パラメータを解析し、Drizzle Kit に伝える設定を行います。
 
-### 4. マイグレーションとシーディング
+```typescript:drizzle.config.ts
+import { defineConfig } from "drizzle-kit";
+import "dotenv/config";
 
-データベーススキーマを適用し、初期データを投入します。
-
-```bash
-# マイグレーションの生成（スキーマ変更時）
-pnpm run generate
-
-# マイグレーションの実行（DBへの適用）
-pnpm run migrate
-
-# 初期データの投入
-pnpm run seed
-```
-
-もしくは、以下のコマンドでデータベースをリセットして再構築できます。
-
-```bash
-pnpm run reset
-```
-
-## 実行
-
-メインスクリプトを実行して、データベースからデータを取得しコンソールに表示します。
-
-```bash
-pnpm run dev
-```
-
-## 利用可能なスクリプト
-
-`package.json` に定義されている主なコマンドです：
-
-- `pnpm run dev`: アプリケーションのエントリーポイント (`src/index.ts`) を実行します。
-- `pnpm run docker`: Docker Compose を使って PostgreSQL をバックグラウンドで起動します。
-- `pnpm run generate`: Drizzle Kit を使用してスキーマ変更からマイグレーションファイルを生成します。
-- `pnpm run migrate`: マイグレーションをデータベースに適用します。
-- `pnpm run seed`: テストデータをデータベースに投入します。
-- `pnpm run reset`: データベースをリセットし、マイグレーションを再適用します。
-
-## プロジェクト構造
-
-- `src/db/schema.ts`: Drizzle ORM のスキーマ定義
-- `src/db/relations.ts`: リレーション定義（もし存在すれば）
-- `src/index.ts`: サンプル実行コード
-- `drizzle/`: マイグレーションファイルとスナップショット
-- `tools/`: マイグレーションやシード用のユーティリティスクリプト
-- `docker/`: Docker Compose 設定ファイル
-
-## スキーマ切り替えの仕組み (`search_path`)
-
-このプロジェクトでは、接続先の PostgreSQL スキーマ（`search_path`）を環境変数 `DATABASE_URL` のクエリパラメータで動的に切り替える仕組みを実装しています。これにより、同じデータベースインスタンス内で開発環境、テスト環境などを容易に分離できます。
-
-### 1. 設定の読み込み (`drizzle.config.ts`)
-
-`drizzle.config.ts` は `DATABASE_URL` を解析し、`?schema=xxx` パラメータが存在する場合はその値を、存在しない場合はデフォルトの `public` をスキーマとして採用します。そして`migrations.schema`にスキーマ名を指定します。
-
-しかし`migrations.schema`を指定しても`migrate`の管理用テーブルの場所が指定できるだけで、肝心のテーブル自体は`public`に作られてしまいます。これに対する対処は、後述する自作`migrate`コマンドで対処します。
-
-```typescript
-// drizzle.config.ts
+const connectionString = process.env.DATABASE_URL!;
 const url = new URL(connectionString);
+// クエリパラメータから schema を取得。なければ public
 const searchPath = url.searchParams.get("schema") ?? "public";
 
 export default defineConfig({
-  // ...
+  dialect: "postgresql",
+  schema: "./src/db/schema.ts",
+  out: "./drizzle",
+  dbCredentials: {
+    url: connectionString,
+  },
   migrations: {
-    schema: searchPath, // マイグレーション対象のスキーマを指定
+    // マイグレーション管理テーブル（__drizzle_migrations）の作成先を指定
+    schema: searchPath,
   },
 });
+
 ```
 
-### 2. ツール側の制御 (`tools/`)
+### 2. アプリケーションコードでの接続
 
-`tools/` ディレクトリ内のスクリプト（`migrate.ts`, `seed.ts`, `reset.ts`）は、この `drizzle.config.ts` の設定を読み込んで動作します。
+アプリケーションから DB に接続する際、PostgreSQL ドライバのオプションとして `search_path` を渡します。これにより、発行される SQL にスキーマ名が明記されていなくても、自動的に指定したスキーマがターゲットになります。
 
-各ツールは、DB 接続時に `options: "--search_path=..."` を指定して、セッションのデフォルトスキーマを固定しています。これにより、その後のクエリがすべて指定されたスキーマに対して実行されます。
-
-```typescript
-// tools/migrate.ts 等の共通ロジック
-const searchPath = config.migrations?.schema ?? "public";
-
-const db = drizzle({
-  connection: {
-    connectionString: config.dbCredentials.url,
-    // セッションレベルで search_path を設定
-    options: `--search_path=${searchPath}`,
-  },
-});
-```
-
-#### 各ツールの詳細挙動
-
-##### **`tools/migrate.ts`**:
-
-`drizzle-orm/node-postgres/migrator` の `migrate` 関数を使用する際、`migrationsSchema` オプションに `search_path` を渡します。これにより、マイグレーション管理テーブル（`__drizzle_migrations`）や作成されるテーブルが正しいスキーマに配置されます。
-
-`drizzle-kit`の CLI を使わずスクリプトを実装しているのは、CLI コマンドにスキーマを切り替えるパラメータを載せることが出来ないからです。マイグレーションをユーザースクリプトとして実装することによって、スキーマの切り替えが実現できます。
-
-```ts
-import config from "../drizzle.config";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
-
-const main = async () => {
-  if (config.dialect !== "postgresql")
-    throw new Error("Only postgresql is supported");
-  if (!("dbCredentials" in config) || !("url" in config.dbCredentials)) {
-    throw new Error(
-      "dbCredentials in drizzle.config.ts must have a 'url' property."
-    );
-  }
-  const searchPath = config.migrations?.schema ?? "public";
-
-  const db = drizzle({
-    connection: {
-      connectionString: config.dbCredentials.url,
-      options: `--search_path=${searchPath}`,
-    },
-  });
-  if (!config.out) throw new Error("out is not set");
-  await migrate(db, {
-    migrationsFolder: config.out,
-    migrationsSchema: searchPath,
-  });
-  db.$client.end();
-};
-
-main();
-```
-
-##### **`tools/reset.ts`**:
-
-データベース全体を初期化するため、指定されたスキーマ自体を `DROP SCHEMA ... CASCADE` コマンドで削除します。これにより、テーブルだけでなくスキーマごとクリーンアップされます。
-
-`drizzle-kit`の CLI に欠けている機能です。
-
-```ts
-import config from "../drizzle.config";
-import { drizzle } from "drizzle-orm/node-postgres";
-
-const main = async () => {
-  if (config.dialect !== "postgresql")
-    throw new Error("Only postgresql is supported");
-  if (!("dbCredentials" in config) || !("url" in config.dbCredentials)) {
-    throw new Error(
-      "dbCredentials in drizzle.config.ts must have a 'url' property."
-    );
-  }
-  const searchPath = config.migrations?.schema ?? "public";
-  const db = drizzle({
-    connection: {
-      connectionString: config.dbCredentials.url,
-      options: `--search_path=${searchPath}`,
-    },
-  });
-  // 対象スキーマの削除
-  await db.execute(`drop schema ${searchPath} cascade`).catch(() => {});
-  db.$client.end();
-};
-
-main();
-```
-
-##### **`tools/seed.ts`**:
-
-データの投入前に既存データをクリアします。`drizzle-seed` の標準機能ではスキーマ指定時の挙動がプロジェクトの要件と合わない場合があるため、明示的に `TRUNCATE TABLE ... CASCADE` を発行してテーブルを空にしてから、`seed` 関数でデータを投入しています。
-
-`drizzle-seed`の`reset`は使用せずに、テーブル内容のクリアを行っています。`drizzle-seed`の`reset`は、スキーマ名が設定されていない場合、勝手にテーブル名に`public`のスキーマ名を付け加えたうえで`truncate`意味不明な仕様になっており実用不能でした。
-
-```ts
-import config from "../drizzle.config";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { seed } from "drizzle-seed";
-import path from "path";
-import { pathToFileURL } from "node:url";
-import { sql } from "drizzle-orm";
-import { getTableConfig, type PgTable } from "drizzle-orm/pg-core";
-import { isTable } from "drizzle-orm";
-
-const main = async () => {
-  if (config.dialect !== "postgresql")
-    throw new Error("Only postgresql is supported");
-  if (!("dbCredentials" in config) || !("url" in config.dbCredentials)) {
-    throw new Error(
-      "dbCredentials in drizzle.config.ts must have a 'url' property."
-    );
-  }
-  const searchPath = config.migrations?.schema ?? "public";
-
-  const db = drizzle({
-    connection: {
-      connectionString: config.dbCredentials.url,
-      options: `--search_path=${searchPath}`,
-    },
-  });
-  if (!config.schema) throw new Error("schema is not set");
-  const schema = await Promise.all(
-    (Array.isArray(config.schema) ? config.schema : [config.schema]).map((s) =>
-      import(pathToFileURL(path.resolve(s)).href).then((v) => v)
-    )
-  );
-  const s = Object.assign({}, ...schema);
-  await db.transaction(async (tx) => {
-    // drizzle-seedのresetはスキーマ名が巻き込まれるため、相当のものを独自に実装
-    await db.execute(
-      sql.raw(
-        `truncate ${Object.values(s)
-          .filter((t) => isTable(t))
-          .map((t) => `"${getTableConfig(t as PgTable).name}"`)
-          .join(",")} cascade;`
-      )
-    );
-    await seed(tx, s);
-  });
-  await db.$client.end();
-};
-main();
-```
-
-### 利用例
-
-`migrate`/`seed`をスキーマ切り替えに対応させたので、あとは普通に利用するだけです。`drizzle`のインスタンス作成時に`search_path`を設定することによって、対象のスキーマに接続できます。
-
-```ts
+```typescript:src/index.ts
 import "dotenv/config";
-import { relations } from "./db/relations.js";
 import { drizzle } from "drizzle-orm/node-postgres";
+import { relations } from "./db/relations.js";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) throw new Error("DATABASE_URL is not set");
@@ -291,21 +91,196 @@ const searchPath = url.searchParams.get("schema") ?? "public";
 const db = drizzle({
   connection: {
     connectionString,
+    // セッションレベルで search_path を設定
+    // これにより、以降のクエリはこのスキーマに対して実行される
     options: `--search_path=${searchPath}`,
   },
   relations,
 });
 
+// 使用例
 const main = async () => {
-  console.log(
-    await db.query.posts.findMany({ with: { author: true, categories: true } })
-  );
+  const result = await db.query.posts.findMany({
+    with: { author: true, categories: true }
+  });
+  console.log(result);
   db.$client.end();
 };
 
 main();
+
 ```
+
+---
+
+## 運用ツールの自作（Migrate, Seed, Reset）
+
+Drizzle Kit の CLI (`drizzle-kit migrate` 等）は便利ですが、動的なスキーマ切り替えや、環境ごとのクリーンアップを行うには柔軟性が足りない場合があります。そこで、Node.js スクリプトとして各コマンドを実装します。
+
+これらのスクリプトは `tools/` ディレクトリに配置し、`drizzle.config.ts` の設定を読み込んで動作させます。
+
+### A. マイグレーション実行 (`tools/migrate.ts`)
+
+CLI の代わりに `drizzle-orm` の `migrate` 関数を使用します。ここで重要なのが `migrationsSchema` オプションです。これを指定することで、マイグレーション履歴の管理テーブルも指定スキーマ内に作成されます。
+
+```typescript:tools/migrate.ts
+import config from "../drizzle.config";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+
+const main = async () => {
+  // ... (接続チェック省略) ...
+
+  const searchPath = config.migrations?.schema ?? "public";
+
+  const db = drizzle({
+    connection: {
+      connectionString: config.dbCredentials.url,
+      options: `--search_path=${searchPath}`,
+    },
+  });
+
+  if (!config.out) throw new Error("out is not set");
+
+  // スキーマを指定してマイグレーションを実行
+  await migrate(db, {
+    migrationsFolder: config.out,
+    migrationsSchema: searchPath,
+  });
+
+  await db.$client.end();
+};
+
+main();
+
+```
+
+### B. データベースリセット (`tools/reset.ts`)
+
+開発中、DB を完全にクリーンな状態に戻したい場合があります。`drizzle-kit` にはこの機能が不足しているため、指定されたスキーマごと削除（`DROP SCHEMA ... CASCADE`）するスクリプトを用意します。
+
+```typescript:tools/reset.ts
+// ... (imports) ...
+
+const main = async () => {
+  // ... (config読み込み) ...
+  const searchPath = config.migrations?.schema ?? "public";
+
+  const db = drizzle({
+    connection: {
+      connectionString: config.dbCredentials.url,
+      options: `--search_path=${searchPath}`,
+    },
+  });
+
+  // スキーマごと削除してカスケード
+  await db.execute(`DROP SCHEMA IF EXISTS "${searchPath}" CASCADE`);
+
+  // スキーマを再作成（必要に応じて）
+  await db.execute(`CREATE SCHEMA IF NOT EXISTS "${searchPath}"`);
+
+  await db.$client.end();
+};
+
+main();
+
+```
+
+### C. シーディング (`tools/seed.ts`)
+
+`drizzle-seed` を使用しますが、ここにも注意点があります。標準の `reset` 機能を使うと、スキーマ名が正しく扱われず `public` などを誤って参照してしまう挙動（バグまたは仕様）が見られました。
+そのため、手動で `TRUNCATE` を行ってからデータを投入します。
+
+```typescript:tools/seed.ts
+import config from "../drizzle.config";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { seed } from "drizzle-seed";
+import { sql, isTable } from "drizzle-orm";
+import { getTableConfig, type PgTable } from "drizzle-orm/pg-core";
+import * as schema from "../src/db/schema"; // スキーマ定義をインポート
+
+const main = async () => {
+  // ... (config読み込み) ...
+  const searchPath = config.migrations?.schema ?? "public";
+
+  const db = drizzle({
+    connection: {
+      connectionString: config.dbCredentials.url,
+      options: `--search_path=${searchPath}`,
+    },
+  });
+
+  await db.transaction(async (tx) => {
+    // 全テーブルを動的に取得して TRUNCATE する
+    const tables = Object.values(schema)
+      .filter((t) => isTable(t))
+      .map((t) => `"${getTableConfig(t as PgTable).name}"`)
+      .join(", ");
+
+    if (tables.length > 0) {
+      await tx.execute(sql.raw(`TRUNCATE TABLE ${tables} CASCADE;`));
+    }
+
+    // データの投入
+    await seed(tx, schema);
+  });
+
+  await db.$client.end();
+};
+
+main();
+
+```
+
+---
+
+## 実行方法
+
+`package.json` に以下のようにスクリプトを定義しておくとスムーズに運用できます。
+
+```json
+{
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "docker": "docker compose up -d",
+    "generate": "drizzle-kit generate",
+    "migrate": "tsx tools/migrate.ts",
+    "seed": "tsx tools/seed.ts",
+    "reset": "tsx tools/reset.ts"
+  }
+}
+```
+
+### ワークフロー
+
+1. **.env の設定**: URL にターゲットスキーマを指定します。
+
+```env
+DATABASE_URL=postgres://user:pass@localhost:5432/db?schema=test_schema
+
+```
+
+2. **DB 起動**: `pnpm run docker`
+3. **マイグレーション生成**: `pnpm run generate` (スキーマ変更時）
+4. **適用 & データ投入**:
+
+```bash
+pnpm run migrate # 指定したスキーマにテーブル作成
+pnpm run seed    # 指定したスキーマにデータ投入
+
+```
+
+5. **アプリ実行**: `pnpm run dev`
+
+これで、`test_schema` 配下にデータが作られ、アプリもそこを参照して動くようになります。環境変数を書き換えるだけで、コードを変更することなく接続先スキーマをスイッチ可能です。
+
+---
 
 ## まとめ
 
-Drizzle で PostgreSQL のスキーマを設定するには pgSchema を使って、固定でスキーマ名を設定することが前提になっています。しかしテストや開発時に、動的にスキーマを切り替えたいというニーズが完全に無視されており、とても不便です。今回紹介したように CLI のコマンドや関連パッケージの一部機能を自作して回避すれば対応は可能です。
+Drizzle ORM で動的なスキーマ切り替えを実現するには、標準の `pgSchema` 定義ではなく、以下の組み合わせが有効です。
+
+1. PostgreSQL 標準の `search_path` を接続オプションで利用する。
+2. `drizzle-kit` の CLI に頼らず、`migrate` や `seed` をプログラム（スクリプト）から実行し、その際にスキーマ情報を注入する。
+
+このアプローチにより、Prisma のような手軽さで、開発・テスト・本番環境のスキーマ分離を Drizzle でも実現できます。ぜひ試してみてください。
