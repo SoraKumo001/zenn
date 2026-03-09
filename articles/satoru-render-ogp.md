@@ -1,5 +1,5 @@
 ---
-title: "satoru-renderでOGPイメージの作成"
+title: "satoru-render で OGPイメージの作成 ～ WebAssembly で複雑な HTML を画像変換 ～"
 emoji: "🔖"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: [nextjs, ogp, cloudflare, wasm, typescript]
