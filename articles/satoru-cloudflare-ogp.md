@@ -12,7 +12,7 @@ CloudflareでOGPを作る場合、Satoriを使うケースが多いですが、 
 
 [satoru-render](https://www.npmjs.com/package/satoru-render)で何ができるかはこちらで確認可能です
 
-https://sorakumo001.github.io/satoru/
+https://sorakumo001.github.io/satoru/master
 
 # 作成例
 
