@@ -1,5 +1,5 @@
 ---
-title: "Next.jsとsatoru-renderを使ってRSCのページをそのままOGP画像に変換する"
+title: "Next.js と satoru-render を使って RSC のページをそのまま OGP 画像に変換する"
 emoji: "🙌"
 type: "tech"
 topics: [nextjs, ogp, react, typescript]
@@ -18,7 +18,9 @@ Next.js で OGP 画像を作る際、標準的な選択肢は `@vercel/og` (Sato
 
 https://next-rsc-ogp.vercel.app/
 
-## ![](/images/satoru-render-nextjs-ogp/2026-04-26-22-24-54.png)
+OGP画像
+
+![](/images/satoru-render-nextjs-ogp/2026-04-26-22-24-54.png)
 
 https://next-rsc-ogp.vercel.app/forecast/120000
 
