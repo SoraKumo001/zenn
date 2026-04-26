@@ -1,36 +1,24 @@
 ---
 title: "Next.jsとsatoru-renderを使ってRSCのページをそのままOGP画像に変換する"
 emoji: "🙌"
-type: "tech" # tech: 技術記事 / idea: アイデア
+type: "tech"
 topics: [nextjs, ogp, react, typescript]
 published: true
 ---
 
-# OGP画像の作成
+Next.js で OGP 画像を作る際、標準的な選択肢は `@vercel/og` (Satori) ですが、CSS の制約に泣かされた経験はないでしょうか。「ブラウザで表示されているこのレイアウトをそのまま OGP にしたいだけなのに、OGP 用に JSX を書き直すのが面倒すぎる」――そんな課題を解決するために開発したのが [**`satoru-render`**](https://www.npmjs.com/package/satoru-render) です。
 
-OGPイメージの生成ライブラリとしてNext.jsでは`@vercel/og`がOGP画像生成のためによく使われています。内部ではSatoriというライブラリが利用されています。ただ、SatoriはCSSによるレイアウトや装飾が限定的なので、もっと高機能なOGP画像を生成するために [`satoru-render`](https://www.npmjs.com/package/satoru-render) を開発しました。基本的にはHTMLをそのまま画像に変換するのがコンセプトです。サポートできるCSSを増やし続けた結果、かなりの再現性に到達しました。そこで気が付きました。HTMLをそのまま画像に変換できるなら、OGPイメージもページ自体をそのまま使えばよいのではないかと。
+コンセプトは「HTML をそのまま画像に変換する」。かなりの再現性に到達した結果、ふと「OGP 画像もページ自体をそのまま使えばいいのでは？」と思いつきました。
 
-Webアプリケーションにおいて、動的なOGP（Open Graph Protocol）画像を生成することは、SNS等でのシェア効果を高めるために非常に重要です。その中で「Webページ用のUI」と「OGP用のUI」を別々に実装・管理しなければならないという課題がありました。
-
-この記事では、**`satoru-render`** を使用し、**Next.jsのApp Router (RSC: React Server Components) で作成したWebページのHTMLを、そのままOGP画像に変換する手法**について、実際の天気予報アプリケーション（本プロジェクト）をサンプルとして解説します。
+この記事では、Next.js の App Router (RSC) で作成したページをそのまま画像化する手法を、天気予報アプリのサンプルを例に解説します。
 
 # サンプルサイト
 
-satoru-renderでサイトのHTMLをそのままOGP画像に変換したサンプルサイトです。サイトの内容とOGP画像がほぼ一致しています。ただ、使用しているCSSの構造によっては、必ずしもレンダリングが再現できるわけではありません。今回もこのサンプルを作り始めたときに、AIがテキストグラデーションをぶっこんできたのですが、satoru-renderは対応しておらず、急遽追加対応しています。
-
-サンプルサイトのコードはこちらです。
-
-https://github.com/SoraKumo001/next-rsc-ogp
-
----
+実際にサイトの HTML をそのまま OGP 画像に変換した例です。サイトのデザインと OGP 画像がほぼ一致しているのがわかると思います。
 
 https://next-rsc-ogp.vercel.app/
 
-OGP画像
-
-![](/images/satoru-render-nextjs-ogp/2026-04-26-22-24-54.png)
-
----
+## ![](/images/satoru-render-nextjs-ogp/2026-04-26-22-24-54.png)
 
 https://next-rsc-ogp.vercel.app/forecast/120000
 
@@ -38,14 +26,18 @@ OGP画像
 
 ![](/images/satoru-render-nextjs-ogp/2026-04-26-22-25-20.png)
 
+_※ 開発中、AI が勝手にテキストグラデーションを使ってきたのですが、`satoru-render` が未対応だったため急遽実装を追加しました。最近の複雑な CSS もかなり動くようになっています。_
+
+ソースコード: [SoraKumo001/next-rsc-ogp](https://github.com/SoraKumo001/next-rsc-ogp)
+
 # 仕組みの概要
 
-`satoru-render` は、HTML/CSSを解釈して画像（PNGなど）を出力するレンダリングエンジンです。この機能をNext.jsのRoute Handler (`/api/og`) と組み合わせることで、以下の非常にシンプルなフローを実現できます。
+Route Handler (`/api/og`) をハブにして、以下のフローで画像を生成します。
 
-1. OGP画像リクエストが `/api/og?path=/forecast/130000` のように届く。
-2. Route Handler内で、対象のパス (`/forecast/130000`) に対して自身のサーバーへ `fetch` リクエストを行う。
-3. レンダリング済みの完全なHTML文字列を取得する。
-4. 取得したHTML文字列をそのまま `satoru-render` に渡し、PNG画像を生成して返す。
+1. `/api/og?path=/xxx` へのリクエストを Route Handler が受ける。
+2. Route Handler 内で、対象パス (`/xxx`) に対して自分自身のサーバーへ `fetch` を飛ばす。
+3. レンダリング済みの HTML を取得し、そのまま `satoru-render` に渡す。
+4. 生成された PNG を返す。
 
 ```mermaid
 sequenceDiagram
@@ -62,19 +54,15 @@ sequenceDiagram
     API-->>SNS: Return PNG Image
 ```
 
-これにより、**OGP専用のJSXコンポーネントを一切書くことなく、実際のWebページと全く同じデザインのOGP画像を自動生成**することが可能になります。
+**「OGP 専用のコンポーネントを一切書かなくていい」** というのが最大の強みです。
 
-ただ、CSSやフォントの読み込みなどを、ブラウザと同じことを一から行っているため、レンダリングに数秒かかります。また、今回はHTMLが完全に生成されていることが前提となるため、クライアント側のJavaScript動作を前提としているページでは、正しくOGP画像を生成できません。その場合はJSDOMを利用してHTMLをレンダリングするという前処理がさらに必要になりますが、動作自体は不可能ではありません。
+ただし、ブラウザ相当のレンダリングをサーバーで行うため生成には数秒かかります。実運用では Vercel の Edge Network などのキャッシュを併用するのが前提になります。
 
----
+# 実装のポイント
 
-# 実装の解説（サンプルプロジェクトより）
+### 1. OGP 生成 API (`app/api/og/route.tsx`)
 
-本プロジェクト（天気予報アプリ）を例に、具体的な実装を見ていきましょう。
-
-## 1. OGP画像生成APIの実装 (`app/api/og/route.tsx`)
-
-OGP画像を生成するエンドポイントです。対象となるページのHTMLを取得し、画像化します。
+自分自身のサーバーから HTML を引っこ抜き、画像化するコア部分です。
 
 ```tsx
 import { NextResponse } from "next/server";
@@ -84,38 +72,31 @@ export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const baseUrl = url.origin;
-    // OGP化したいページのパスを取得（例: /forecast/130000）
     const targetPath = url.searchParams.get("path") || "/";
-
     const targetUrl = new URL(targetPath, baseUrl);
 
-    // 'path' 以外のクエリパラメータもターゲットURLに引き継ぐ
+    // 他のクエリパラメータも引き継ぐ
     url.searchParams.forEach((value, key) => {
-      if (key !== "path") {
-        targetUrl.searchParams.set(key, value);
-      }
+      if (key !== "path") targetUrl.searchParams.set(key, value);
     });
 
-    // 1. HTTP経由で表示対象のページのHTMLをフェッチ
+    // 1. 自分自身のページをフェッチして HTML を取得
     const response = await fetch(targetUrl.toString());
-    if (!response.ok) {
-      throw new Error(`Failed to fetch HTML: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
     const html = await response.text();
 
-    // 2. 取得したHTML文字列をそのまま satoru-render に渡して画像化
+    // 2. HTML をそのまま画像化
     const png = await render({
       value: html,
-      width: 1800, // キャンバスのベース幅（高さは自動計算）
-      outputWidth: 1200, // 最終的なOGP画像の出力幅
-      outputHeight: 630, // 最終的なOGP画像の出力高さ
-      fit: "cover", // キャンバスを出力サイズにどのように合わせるか
-      fitPosition: { y: 0, x: 0.5 }, // 上部中央を基準に切り取る
-      baseUrl, // 相対パスの解決用（画像やフォントなどのリソース取得に使用）
+      width: 1800, // レンダリング時のベース幅
+      outputWidth: 1200, // 最終出力
+      outputHeight: 630,
+      fit: "cover", // 1200x630に収める
+      fitPosition: { y: 0, x: 0.5 }, // 上部中央を基準に
+      baseUrl, // CSS/画像の相対パス解決用
       format: "png",
     });
 
-    // 3. PNG画像としてレスポンスを返す
     return new NextResponse(Buffer.from(png), {
       status: 200,
       headers: {
@@ -123,30 +104,19 @@ export async function GET(request: Request) {
         "Cache-Control": "public, s-maxage=60, stale-while-revalidate=36000",
       },
     });
-  } catch (err: unknown) {
-    return NextResponse.json(
-      { error: "Failed to generate image" },
-      { status: 500 },
-    );
+  } catch (err) {
+    return NextResponse.json({ error: "Generation failed" }, { status: 500 });
   }
 }
 ```
 
-**ポイント:**
+RSC のページは `fetch` 時にサーバーサイドでデータ取得が完了した状態の HTML を返してくれるので、これだけで動的なデータが反映された画像になります。
 
-- `fetch(targetUrl)`: 自分自身のサーバー内のページにアクセスし、RSCとしてレンダリング済みのHTMLを取得しています。データフェッチなども完了した状態のHTMLが手に入ります。
-- `render()`: `satoru-render` のコア関数です。`value` にHTML文字列を渡すだけで高度な描画が行われます。
-- `fit: "cover"`, `fitPosition`: Webページは縦に長くなることが多いですが、OGP画像（1200x630）に綺麗に収めるために、上部中央（`y: 0`, `x: 0.5`）を基準にしてトリミング（`cover`）するように設定しています。
-- `baseUrl`: HTML内に含まれる相対パスのCSSファイルやWebフォントなどのリソースを正しく解決するために必須の設定です。
+### 2. メタデータの設定
 
-## 2. 各ページでのメタデータ設定 (`app/forecast/[code]/page.tsx` など)
-
-次に、各ページでこのAPIを呼び出すようにOGPのメタデータを設定します。
+各ページでは、自身のパスをパラメータとして API を呼び出すように設定します。
 
 ```tsx
-import { getMetadata } from "@/lib/metadata";
-import { getForecast } from "@/lib/jma";
-
 export async function generateMetadata(props: {
   params: Promise<{ code: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -159,49 +129,30 @@ export async function generateMetadata(props: {
   const queryString = new URLSearchParams(searchParams as any).toString();
   const path = `/forecast/${code}${queryString ? `?${queryString}` : ""}`;
 
-  try {
-    const forecast = await getForecast(code);
-    const areaName = forecast[0].timeSeries[0].areas[0].area.name;
-
-    return getMetadata({
-      title: `${areaName}の天気予報`,
-      description: `${areaName}の直近の天気予報を表示します。`,
-      path, // 構築したパスを渡す
-    });
-  } catch {
-    return getMetadata({ title: "天気予報", path });
-  }
+  return {
+    title: "天気予報",
+    openGraph: {
+      images: [`/api/og?path=${encodeURIComponent(path)}`],
+    },
+  };
 }
 ```
 
-ヘルパー関数 `getMetadata` 側で、渡された `path` をもとにOGPエンドポイントへのURLを組み立てています。
+# このアプローチの何が良いのか
 
-```ts
-// lib/metadata.ts 内
-const ogImage = `/api/og?path=${encodeURIComponent(path)}`;
-```
+実際に運用してみると、いくつかの大きなメリットを感じます。
 
-これにより、クエリパラメータが変更された場合でも、その状態を保持したままページが `fetch` され、表示状態に完全に一致するOGP画像が生成されます。
-
----
-
-## このアプローチのメリット
-
-1. **デザインの二重管理からの解放**
-   一番の大きなメリットです。Webページ用のReactコンポーネント（Tailwind CSSなどのユーティリティクラスでのスタイリングを含む）をそのまま流用できるため、OGP用のJSXを別途記述・保守する手間が省けます。
-2. **RSC (React Server Components) の恩恵**
-   サーバーサイドでデータをフェッチしてレンダリングされた完成形のHTMLを画像化するため、非同期データを含むリッチなページも容易にOGP化できます。
-3. **Webフォントや外部リソースの自動解決**
-   `satoru-render` はHTML内の `<style>` や `<link>` を解釈するため、ページで利用しているWebフォント（`next/font` 含む）や画像をそのままOGP画像にも綺麗に反映できます。
-4. **クエリパラメータを通じた動的制御**
-   `path` にクエリを含めることで、「特定の地域を選択した状態」や「表示モード」など、URLベースで表現できるUIのバリエーションをすべて自動的に画像化できます。
+1. **デザインの同期コストがゼロ**: UI を変更すれば OGP も勝手に変わります。「サイトは更新したけど OGP 用のコンポーネントを直し忘れた」という事故が物理的に起きません。
+2. **Tailwind CSS がそのまま使える**: Satori では使えないプロパティを気にする必要がほぼありません。
+3. **Web フォントの自動適用**: `next/font` で読み込んだフォントも HTML 内の CSS を解釈して反映されます。
+4. **URL 状態の再現**: クエリパラメータで UI を切り替えている場合も、その URL を `path` に渡すだけで「その状態」が画像になります。
 
 # まとめ
 
-`satoru-render` と自身のサーバーへの `fetch` リクエストを組み合わせることで、Next.jsのRSCページをそのままOGP画像として出力する、シンプルかつ強力なシステムを構築できます。
+「ページそのものを画像にする」という力技に近い手法ですが、`satoru-render` のレンダリング精度が上がったことで現実的な選択肢になりました。
 
-複雑なレイアウトや、作成済みのリッチなWebページをそのままSNSでシェアさせたい場合に、このアプローチは非常に有効な選択肢となります。
+特に、複雑なレイアウトを OGP に反映させたい場合や、運用コストを極限まで下げたい場合には非常に強力な武器になるはずです。
 
-`satoru-render` の詳細な解説はこちらにあります。
+`satoru-render` の詳細な仕組みについては、こちらの解説記事も併せてどうぞ。
 
 https://zenn.dev/sora_kumo/articles/satoru-render-explanation
