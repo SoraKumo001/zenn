@@ -8,7 +8,7 @@ published: true
 
 # WinUI 3 で作る Windows 用マルチメディア Viewer `Quick Image Viewer` の開発
 
-画像を表示するのに愛用しているフリーソフトがあります。[MassiGra](http://www.massigra.net/)というアプリですが。残念ながら10年以上更新されていません。仕方がないので自分で同じような操作感のViewrを作ることにしました。
+画像を表示するのに愛用しているフリーソフトがあります。[MassiGra](http://www.massigra.net/)というアプリですが、残念ながら10年以上更新されていません。仕方がないので自分で同じような操作感のViewrを作ることにしました。
 
 最近のWindowsネイティブ開発はさっぱり行っておらず、最後に作ったのはそこそこ前に作った[WPF](https://learn.microsoft.com/ja-jp/dotnet/desktop/wpf/overview/)の並列動画再生ソフトでした。現在の最新のライブライは[WinUI 3](https://learn.microsoft.com/ja-jp/windows/apps/winui/winui3/)のようだったので、それを使って開発を始めました。
 
