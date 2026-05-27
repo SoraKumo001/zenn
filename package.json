@@ -9,6 +9,6 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
-    "zenn-cli": "0.4.7"
+    "zenn-cli": "0.4.8"
   }
 }
