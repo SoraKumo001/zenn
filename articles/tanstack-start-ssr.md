@@ -3,7 +3,7 @@ title: "TanStack StartでReact QueryのSSRをシンプルにする"
 emoji: "🚀"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["react", "tanstackquery", "tanstackstart", "ssr", "cloudflare"]
-published: false
+published: true
 ---
 
 ※ サンプルコード： https://github.com/SoraKumo001/tanstack-start-ssr
@@ -20,7 +20,16 @@ TanStack StartでSSR時にTanStack Query（React Query）を組み合わせよ�
 
 今回の動作確認では、Next.jsのSSRデモアプリをTanStack Startに移植したプロジェクトを使用しています。
 
-コア部分にはReact 19とViteを据え、スタイリングにはTailwind CSS v4（@tailwindcss/vite）を導入しました。ビルドしたアプリはWranglerを使ってCloudflare Workersへデプロイする想定の構成です。データ取得周りは、`@tanstack/react-query` と今回紹介する `react-query-ssr` で構築されています。
+| 項目           | 使用したもの            | 補足                                 |
+| :------------- | :---------------------- | :----------------------------------- |
+| フレームワーク | TanStack Start          | Next.jsのSSRデモアプリを移植         |
+| UI             | React 19                | Client Component中心の構成           |
+| ビルド         | Vite                    | TanStack StartのVite構成             |
+| スタイリング   | Tailwind CSS v4         | `@tailwindcss/vite` を利用           |
+| データ取得     | `@tanstack/react-query` | コンポーネント内の `useQuery` で取得 |
+| SSR補助        | `react-query-ssr@1.0.4` | `SSRProvider` と `enableSSR` を利用  |
+| サーバー処理   | Server Functions        | `createServerFn` で外部API取得を実行 |
+| デプロイ想定   | Cloudflare Workers      | Wranglerでビルド・デプロイ           |
 
 なお、この記事の内容は `react-query-ssr@1.0.4` と TanStack Query v5 系で検証しています。`react-query-ssr` は `useQuery` に `suspense` オプションを渡すことでSSR時の待機を実現しますが、TanStack Query v5 の公式リファレンスでは通常の `useQuery` オプションとして `suspense` は前面に出ていません。そのため、導入時は利用する `@tanstack/react-query` と `react-query-ssr` の組み合わせを固定して動作確認しておくのが安全です。
 
@@ -38,17 +47,17 @@ TanStack StartでSSR時にTanStack Query（React Query）を組み合わせよ�
 
 ```tsx
 await queryClient.prefetchQuery({
-  queryKey: ['simple'],
+  queryKey: ["simple"],
   queryFn: fetchSimple,
-})
+});
 
-const dehydratedState = dehydrate(queryClient)
+const dehydratedState = dehydrate(queryClient);
 
 return (
   <HydrationBoundary state={dehydratedState}>
     <Simple />
   </HydrationBoundary>
-)
+);
 ```
 
 `react-query-ssr` を使う場合、取得処理はコンポーネント側の `useQuery` に寄せられます。
@@ -56,9 +65,9 @@ return (
 ```tsx
 const { data } = useQuery({
   ...enableSSR,
-  queryKey: ['simple'],
+  queryKey: ["simple"],
   queryFn: fetchSimple,
-})
+});
 ```
 
 この差分が、ルートごとの `prefetchQuery` や `dehydrate` を減らせる理由です。
@@ -190,14 +199,16 @@ TanStack Startでデータ取得やデータベース操作を行う際、避け
 Server Functionsは、サーバー側だけで実行したい処理を通常のJavaScript/TypeScriptの関数として定義し、クライアントからRPC（遠隔手続き呼び出し）のように直接インポートして呼び出せる機能です。
 
 ```typescript
-export const fetchWeatherServer = createServerFn({ method: 'GET' })
+export const fetchWeatherServer = createServerFn({ method: "GET" })
   .inputValidator((input: number) => input)
   .handler(async ({ data: id }) => {
     // このハンドラ内はサーバーサイドでのみ実行される
-    const r = await fetch(`https://www.jma.go.jp/bosai/forecast/data/overview_forecast/${id}.json`)
-    if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`)
-    return r.json()
-  })
+    const r = await fetch(
+      `https://www.jma.go.jp/bosai/forecast/data/overview_forecast/${id}.json`,
+    );
+    if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
+    return r.json();
+  });
 ```
 
 内部的には、ビルド時にクライアント用のコードとサーバー用のコードが自動で切り分けされます。クライアント側から呼び出すと自動生成されたAPIエンドポイントへHTTPリクエスト（GETやPOST）を送信し、サーバー側ではそのエンドポイントでハンドラ内のロジックが直接実行されるため、開発者はネットワーク境界を意識することなくサーバー処理を組み込めます。
@@ -371,14 +382,14 @@ TanStack Startには標準で強力なデータ取得機構である `loader` �
 
 ### 比較まとめ
 
-| 評価軸 | TanStack Start 標準 `loader` | `react-query-ssr` (useQuery) |
-| :--- | :--- | :--- |
-| **データの定義場所** | ルート（ルーティング層） | コンポーネント（ビュー層） |
-| **コンポーネントの独立性** | ルートからのデータ注入に依存する | コンポーネント単体で自己完結する |
-| **Propsの引き回し** | 発生しやすい | 不要 (Co-location) |
-| **キャッシュ管理機能** | ルート単位のキャッシュが中心 | クエリ単位で細かく制御できる |
+| 評価軸                          | TanStack Start 標準 `loader`     | `react-query-ssr` (useQuery)       |
+| :------------------------------ | :------------------------------- | :--------------------------------- |
+| **データの定義場所**            | ルート（ルーティング層）         | コンポーネント（ビュー層）         |
+| **コンポーネントの独立性**      | ルートからのデータ注入に依存する | コンポーネント単体で自己完結する   |
+| **Propsの引き回し**             | 発生しやすい                     | 不要 (Co-location)                 |
+| **キャッシュ管理機能**          | ルート単位のキャッシュが中心     | クエリ単位で細かく制御できる       |
 | **並列性 / ウォーターフォール** | 優秀（遷移前に一括パラレル取得） | 注意（親子関係のデータ依存に起因） |
-| **React Query SSR記述量** | - | 極小 (`...enableSSR` を渡すだけ) |
+| **React Query SSR記述量**       | -                                | 極小 (`...enableSSR` を渡すだけ)   |
 
 ### 動作フローの視覚的比較
 
