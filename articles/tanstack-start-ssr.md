@@ -8,7 +8,7 @@ published: true
 
 ※ サンプルコード： https://github.com/SoraKumo001/tanstack-start-ssr
 
-TanStack StartでSSR時にTanStack Query（React Query）を組み合わせようとすると、途端にコードが肥大化します。リクエストごとにサーバー側で `QueryClient` を作り、ルートローダーで `prefetchQuery` を回して、完了後にキャッシュを `dehydrate` してHTMLに埋め込み、さらにクライアント側で `HydrationBoundary` で復元する……。この一連の作業をすべてのルートで定義するのは骨が折れます。
+TanStack StartでSSR時にTanStack Query（React Query）を組み合わせようとすると、途端にコードが肥大化します。リクエストごとにサーバー側で `QueryClient` を作り、ルートローダーで `prefetchQuery` を回して、完了後にキャッシュを `dehydrate` してHTMLに埋め込み、さらにクライアント側で `HydrationBoundary` で復元する...。この一連の作業をすべてのルートで定義するのは骨が折れます。
 
 こうしたSSR特有のデータ受け渡し作業を、React標準の **Suspense** の仕組みを使ってほぼ自動化し、ボイラープレートを消し去ってくれるのが **`react-query-ssr`** です。
 
