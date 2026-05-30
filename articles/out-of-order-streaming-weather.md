@@ -14,8 +14,8 @@ published: false
 
 本記事では、DPUの仕組みと、Cloudflare Workers + Durable Objectsを組み合わせてクライアント側に **JavaScriptを1行も書かずに実現する「順不同ストリーミング天気予報」** のデモコードをもとに、その実装テクニックを解説します。
 
-- **デモコード:** [SoraKumo001/out-of-order-streaming2](https://github.com/SoraKumo001/out-of-order-streaming2)
 - **公式ブログ:** [Declarative Partial Updates (Chrome Developer)](https://developer.chrome.com/blog/declarative-partial-updates?hl=ja)
+- **デモコード:** [SoraKumo001/out-of-order-streaming2](https://github.com/SoraKumo001/out-of-order-streaming2)
 
 ![](/images/out-of-order-streaming-weather/2026-05-30-15-59-35.webp)
 
