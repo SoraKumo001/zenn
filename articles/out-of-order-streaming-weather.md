@@ -3,7 +3,7 @@ title: "DPUを使ってJavaScript無しでSPA風の部分更新を実現する"
 emoji: "🤖"
 type: "tech"
 topics: ["chrome", "cloudflare", "dpu", "durableobjects", "frontend"]
-published: false
+published: true
 ---
 
 現代のWebフロントエンド開発において、SPAのようなインタラクティブな部分更新を実現するためには、ReactやVue、SvelteといったJavaScriptフレームワークやライブラリをロード・実行することが当たり前となっています。

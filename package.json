@@ -10,5 +10,7 @@
   "license": "MIT",
   "devDependencies": {
     "zenn-cli": "0.4.8"
-  }
+  },
+  "repository": "https://github.com/SoraKumo001/zenn",
+  "author": "SoraKumo <info@croud.jp>"
 }
