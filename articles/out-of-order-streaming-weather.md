@@ -1,5 +1,5 @@
 ---
-title: "DPUを使ってJavaScript無しでSPA風の部分更新を実現する"
+title: "DPU(Declarative Partial Updates)を使ってJavaScript無しでSPA風の部分更新を実現する"
 emoji: "🤖"
 type: "tech"
 topics: ["chrome", "cloudflare", "dpu", "durableobjects", "frontend"]
