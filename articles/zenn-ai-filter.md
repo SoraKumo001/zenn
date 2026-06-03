@@ -20,6 +20,13 @@ https://github.com/SoraKumo001/zenn-extentions
 
 ![](/images/zenn-ai-filter/2026-06-02-08-56-38.webp)
 
+※ 追記 \(2026/6/3)
+
+ば、ばかな
+トップページに載ったので、自ら消えようとしたら何度やってもフィルターに引っかからない
+
+![](/images/zenn-ai-filter/2026-06-03-08-56-38.webp)
+
 ---
 
 ## 拡張機能の概要とファイル構成
