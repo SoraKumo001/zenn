@@ -12,7 +12,19 @@ published: true
 
 ---
 
-## 1. DPU (Declarative Partial Updates) とは？
+## 1. なぜ React ではなく Remix 3 を使うのか
+
+今回のデモで直接 React を使わず Remix 3 (`@remix-run/ui`) を使っているのは、DPU の実験に必要な **HTML ストリームの制御** と **クライアント側のマウント制御** を分けて扱いやすいからです。
+
+React 18 の SSR ストリーミングは、Suspense の解決に合わせてインラインスクリプトを送り、React 自身のプロトコルで DOM の差し替えやハイドレーションを管理します。これは React アプリとしては非常に完成度の高い仕組みですが、今回のように「後から届いた HTML をブラウザの DPU に処理させ、JavaScript なしでも部分更新したい」という実験では、React のストリーミング機構と DPU のネイティブな DOM 書き換えが重なってしまいます。
+
+一方、Remix 3 の `@remix-run/ui` は、`renderToString()` で HTML を生成し、クライアント側では `createRoot()` でマウントするシンプルな構成です。React DOM の `hydrateRoot` に相当する API はなく、既存 DOM を React 的に照合してイベントを接続する前提ではありません。そのため、サーバー側では DPU 用の `<?start>` / `<?end>` や `<template for>` を含む HTML チャンクを自前で流し、クライアント側では `__REMIX3_SSR__` に埋め込んだ解決済みデータを使って初期状態を復元する、という構成を取りやすくなります。
+
+つまり Remix 3 を使う理由は、「React より高機能だから」ではなく、**DPU が担う No-JS の部分更新** と **Remix 3 が担う JS 有効時のクライアント描画** を意図的に分離できるからです。この分離によって、DPU の強みとハイドレーション上の課題が見えやすくなります。
+
+---
+
+## 2. DPU (Declarative Partial Updates) とは？
 
 従来の HTML レンダリングは上から下への一本道です。一部の重いデータ取得（例：お天気情報の API 呼び出しなど）があると、その部分のレンダリングが完了するまでページ全体の描画がブロックされるか、あるいはローディング用の JavaScript をクライアントで走らせる必要がありました。
 
@@ -42,7 +54,7 @@ DPU は、サーバーから送られてくる HTML ストリームの中で、*
 
 ---
 
-## 2. Next.jsのRSC（React Server Components）/ Suspense ストリーミングとの比較
+## 3. Next.jsのRSC（React Server Components）/ Suspense ストリーミングとの比較
 
 React 18 や Next.js App Router でおなじみの Suspense を用いた out-of-order ストリーミングと、DPU によるストリーミングには決定的な違いがあります。
 
@@ -57,7 +69,7 @@ React 18 や Next.js App Router でおなじみの Suspense を用いた out-of-
 
 ---
 
-## 3. DPU と React ハイドレーションの難しさ（相性の悪さ）
+## 4. DPU と React ハイドレーションの難しさ（相性の悪さ）
 
 React の標準的なハイドレーション（`hydrateRoot`）は、**「サーバーがレンダリングした HTML（DOM）」と「クライアントサイドの React が最初に生成する VDOM（仮想DOM）」が完全に一致していること**を前提としています。
 一方、Remix 3 (`@remix-run/ui`) には React DOM の `hydrateRoot` に相当する API がなく、クライアント側は `createRoot` でマウントします。そのため、このデモでは DPU によって更新済みの DOM をそのまま照合してイベントを接続するのではなく、SSR データを受け渡してクライアント側の初期状態を解決済みにそろえる方針を取っています。
@@ -77,7 +89,7 @@ React の `hydrateRoot` のように既存 DOM とクライアント側ツリー
 
 ---
 
-## 4. デモプロジェクトにおける解決策：DPU フレームのクライアント描画前処理
+## 5. デモプロジェクトにおける解決策：DPU フレームのクライアント描画前処理
 
 この「DPU とハイドレーションの不確定性」を解決するために、本デモプロジェクトでは **DPU で更新された DOM をそのままハイドレーションするのではなく、サーバーからシリアライズされた解決済みデータを引き継いで Remix 3 の `createRoot` でクライアント描画する** というアプローチを採用しています。
 
@@ -166,7 +178,7 @@ const render = () => {
 
 ---
 
-## 5. 主要コード解説
+## 6. 主要コード解説
 
 本プロジェクトがどのように HTML ストリーミングと DPU テンプレートを生成しているか、主要コードを見てみましょう。
 
@@ -267,7 +279,7 @@ export function SSRFetch(handle: Handle<SSRFetchProps>) {
 
 ---
 
-## 6. まとめ
+## 7. まとめ
 
 本プロジェクトは、実験的 Web 標準である **Declarative Partial Updates (DPU)** を用いたストリーミングがいかに軽量で、JavaScript なしでも強力な UX（Out-of-order ストリーミング）を提供できるかを示す非常に興味深いデモです。
 
