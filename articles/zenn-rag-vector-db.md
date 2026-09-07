@@ -1,5 +1,5 @@
 ---
-title: "過去の知見を参照しながら新しい記事を書く！Zenn専用RAG＆MCPツール「zenn-rag」の活用と実装解説"
+title: "自分の書いた Zenn の過去記事を VectorDB から検索、専用 RAG＆MCP ツール「zenn-rag」"
 emoji: "✍️"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["zenn", "rag", "mcp", "lancedb", "typescript"]
