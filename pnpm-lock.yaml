@@ -12,8 +12,8 @@ importers:
         specifier: 0.5.4
         version: 0.5.4(supports-color@7.2.0)
       zenn-rag:
-        specifier: ^0.1.1
-        version: 0.1.1(@types/node@26.4.1)(apache-arrow@18.1.0)(supports-color@7.2.0)
+        specifier: ^0.1.2
+        version: 0.1.2(@types/node@26.4.1)(apache-arrow@18.1.0)(supports-color@7.2.0)
 
 packages:
 
@@ -1322,8 +1322,8 @@ packages:
     engines: {node: '>=22.12.0'}
     hasBin: true
 
-  zenn-rag@0.1.1:
-    resolution: {integrity: sha512-DjQa56dpBWxQbCWiI7IO8jCR1c57iz0u2T4acbsIqFGxtLQsWrckpXVHBKD8fzH2/+wo1gkD3gYhCbFcYWlFDQ==}
+  zenn-rag@0.1.2:
+    resolution: {integrity: sha512-2W0NdEpmDi7Wxj9n1m7mHqcp5xe2fNdFmJo15eubbMJ9W81dTQYTXgeB9pkoqoqYZz3ghKjeB+02RohGWXozwA==}
     hasBin: true
 
   zod-to-json-schema@3.25.2:
@@ -2719,7 +2719,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  zenn-rag@0.1.1(@types/node@26.4.1)(apache-arrow@18.1.0)(supports-color@7.2.0):
+  zenn-rag@0.1.2(@types/node@26.4.1)(apache-arrow@18.1.0)(supports-color@7.2.0):
     dependencies:
       '@google/genai': 2.21.0(@modelcontextprotocol/sdk@1.30.0(supports-color@7.2.0)(zod@4.5.4))(supports-color@7.2.0)
       '@lancedb/lancedb': 0.38.0(@types/node@26.4.1)(apache-arrow@18.1.0)

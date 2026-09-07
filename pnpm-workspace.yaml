@@ -4,5 +4,5 @@ allowBuilds:
   protobufjs: true
   sharp: true
 minimumReleaseAgeExclude:
-  - zenn-rag@0.1.0 || 0.1.1
+  - zenn-rag@0.1.0 || 0.1.1 || 0.1.2
   - zenn-cli@0.5.4
