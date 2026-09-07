@@ -13,8 +13,8 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
-    "zenn-cli": "0.5.3",
-    "zenn-rag": "^0.1.0"
+    "zenn-cli": "0.5.4",
+    "zenn-rag": "^0.1.1"
   },
   "repository": "https://github.com/SoraKumo001/zenn",
   "author": "SoraKumo <info@croud.jp>"
