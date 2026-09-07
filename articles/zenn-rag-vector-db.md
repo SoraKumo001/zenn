@@ -20,8 +20,6 @@ Zennで技術記事や本を書き続けていると、次のような場面に�
 
 そうした用途を想定して作ったのが、Zennリポジトリ向けの Vector DB と RAG ツールキット `zenn-rag` です。
 
-https://github.com/SoraKumo001/zenn-rag
-
 https://www.npmjs.com/package/zenn-rag
 
 ```bash
