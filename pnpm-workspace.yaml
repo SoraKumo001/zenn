@@ -1,0 +1,7 @@
+allowBuilds:
+  "@google/genai": true
+  onnxruntime-node: true
+  protobufjs: true
+  sharp: true
+minimumReleaseAgeExclude:
+  - zenn-rag@0.1.0

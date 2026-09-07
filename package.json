@@ -3,13 +3,18 @@
   "type": "module",
   "scripts": {
     "start": "zenn",
-    "new": "zenn new:article"
+    "new": "zenn new:article",
+    "rag:index": "zenn-rag index",
+    "rag:status": "zenn-rag status",
+    "rag:search": "zenn-rag search",
+    "rag:mcp": "zenn-rag mcp"
   },
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
-    "zenn-cli": "0.5.3"
+    "zenn-cli": "0.5.3",
+    "zenn-rag": "^0.1.0"
   },
   "repository": "https://github.com/SoraKumo001/zenn",
   "author": "SoraKumo <info@croud.jp>"
