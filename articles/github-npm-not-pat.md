@@ -6,7 +6,7 @@ topics: ["github", "npm", "security", "githubactions", "gh"]
 published: true
 ---
 
-GitHub Packages（`npm.pkg.github.com`）でホストされているプライベートな npm パッケージをローカル環境で利用する際、公式ドキュメントや多くの解説記事では、Personal Access Token（PAT）を発行して `.npmrc` に記載する手順が紹介されています。
+GitHub Packages（`npm.pkg.github.com`）でホストされているプライベートな npm パッケージをローカル環境で利用する際、[公式ドキュメント](https://docs.github.com/ja/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#personal-access-token-%E3%81%A7%E8%AA%8D%E8%A8%BC%E3%81%99%E3%82%8B)や多くの解説記事では、Personal Access Token（PAT）を発行して `.npmrc` に記載する手順が紹介されています。
 
 しかし、ローカルマシン上に PAT を平文で保存したり、長期間有効なトークンを個別に管理したりすることには、いくつかのセキュリティ上の懸念があります。
 
