@@ -17,7 +17,8 @@ Cloudflare Workersは高速なエッジ実行環境ですが、メモリ容量�
 Deno Deployは無料プランでも1インスタンスあたり768MBのメモリが利用できます。また無料プランのCPU上限もCloudflareWorkersのような、リクエストにつき10msのような単位ではなく、月あたりの合計稼働時間になるので、重い処理も安心です。
 
 - Deno Deploy Builds Reference
-  https://docs.deno.com/deploy/reference/builds/
+
+https://docs.deno.com/deploy/reference/builds/
 
 768MBのメモリがあれば、画像変換ライブラリやWebAssemblyを用いた処理、アニメーション画像の展開なども余裕を持って実行できます。
 
