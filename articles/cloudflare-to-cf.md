@@ -6,18 +6,18 @@ topics: ["cloudflare", "cloudflareworkers", "reactrouter", "vite", "typescript"]
 published: true
 ---
 
-# はじめに
+## はじめに
 
 Cloudflare から次世代の統合 CLI ツール **`cf`**（現在 v1.0.0-beta）が登場しました。
 従来の `wrangler`（`wrangler.json` / `wrangler.jsonc` / `wrangler.toml`）から、TypeScript ベースの型安全な設定ファイル **`cloudflare.config.ts`** への移行が推奨されています。
 
-公式には `cf migrate` という移行コマンドが用意されていますが、実行するだけでそのまま本番稼働できるわけではなく、いくつかの設定調整やハマりどころが存在します。
+公式には `cf migrate` という移行コマンドが用意されていますが、実行するだけでそのまま本番稼働できるわけではなく、いくつかの設定調整や実運用上のハマりどころが存在します。
 
-この記事では、**React Router（v8 / Vite）+ Cloudflare Workers** のフルスタック構成を例に、`cf migrate` 実行からデプロイ成功までに必要だった全ステップと、実際に直面したエラーとその対処法をまとめました。
+この記事では、**React Router（v8 / Vite）+ Cloudflare Workers** のフルスタック構成や、キュー・バッチ Worker を含むマルチ Worker 構成を例に、`cf migrate` 実行から本番デプロイ成功までに必要だった全ステップと、実際に直面したエラーとその対処法を体系的に整理しました。
 
 ---
 
-# なぜ今 `cf` に移行するのか？移行のメリット
+## なぜ今 `cf` に移行するのか？ 移行の 5 つのメリット
 
 従来の `wrangler` から新 CLI `cf`（および `cloudflare.config.ts`）に移行することで、主に以下の 5 つの大きな恩恵が得られます。
 
@@ -43,7 +43,27 @@ AI が設定を変更する際も、TypeScript の型チェックによる即時
 
 ---
 
-# 1. `cf migrate` の実行と `cloudflare.config.ts` の修正
+## 移行のロードマップ
+
+移行作業は以下の流れで進めます。
+
+```text
+Step 1. 初期移行と設定ファイルの整備 (cf migrate / cloudflare.config.ts)
+  ↓
+Step 2. シークレット・環境変数と型定義 (cf workers types / tsconfig)
+  ↓
+Step 3. Vite / React Router との連携設定 (vite.config.ts)
+  ↓
+Step 4. スクリプトの更新 (package.json)
+  ↓
+Step 5. 実務・本番運用での落とし穴チェック (Windows・CLIフラグ・CI依存)
+  ↓
+Step 6. 最終動作検証と旧設定ファイルの整理
+```
+
+---
+
+## Step 1: `cf migrate` の実行と `cloudflare.config.ts` の整備
 
 まずはプロジェクトルートで移行コマンドを実行します。
 
@@ -51,12 +71,12 @@ AI が設定を変更する際も、TypeScript の型チェックによる即時
 pnpm dlx cf migrate
 ```
 
-これにより以下が行われます：
+これにより以下の変更が自動で行われます：
 - `package.json` の `devDependencies` に `"cf": "1.0.0-beta.x"` が追加
 - `cloudflare.config.ts` が自動生成
 - `.gitignore` に `.cloudflare` ディレクトリが追加
 
-### `cloudflare.config.ts` の `throw new Error` を解消する
+### 1-1. `cloudflare.config.ts` の `throw new Error` を解消する
 
 生成された `cloudflare.config.ts` を開くと、以下のような TODO や例外スローが含まれている場合があります。
 
@@ -65,7 +85,7 @@ pnpm dlx cf migrate
 export default defineConfig({
   worker: {
     name: "my-app",
-    compatibilityDate: "2025-12-13",
+    compatibilityDate: "2026-09-04",
     compatibilityFlags: ["nodejs_compat"],
     entrypoint: "./workers/app.ts",
     // TODO: assets.directory is not supported in cloudflare.config.ts
@@ -81,11 +101,63 @@ export default defineConfig({
 
 Worker 内から静的ファイルを取得するための `ASSETS: bindings.assets()` が宣言されていれば十分ですので、**`throw new Error(...)` や TODO コメントは削除** します。
 
+### 1-2. ブランチ・プレビュー環境（`previews`）の移行: `ctx.isPreview`
+
+`wrangler.jsonc` で `previews: { vars: { ... } }` のようにブランチや PR プレビュー環境の設定を書いていた場合、`cf migrate` は自動的に**関数形式の `defineConfig((ctx) => { ... })`** に変換してくれます。
+
+```typescript
+import { bindings, defineConfig, triggers } from "cf/config";
+
+export default defineConfig((ctx) => {
+  // ブランチ / PR プレビュー環境の個別設定
+  if (ctx.isPreview) {
+    return {
+      worker: {
+        name: "my-app",
+        compatibilityDate: "2026-09-04",
+        compatibilityFlags: ["nodejs_compat"],
+        entrypoint: "src/server.ts",
+        env: {
+          ENVIRONMENT: bindings.text("preview"),
+          // プレビュー専用の R2 バケットや Rate Limit 等
+          COVERS: bindings.r2({ name: "my-app-covers-preview" }),
+          ASSETS: bindings.assets(),
+        },
+      },
+    };
+  }
+
+  // 本番環境の設定
+  return {
+    worker: {
+      name: "my-app",
+      compatibilityDate: "2026-09-04",
+      compatibilityFlags: ["nodejs_compat"],
+      entrypoint: "src/server.ts",
+      triggers: [
+        triggers.queue({
+          name: "my-app-jobs",
+          deadLetterQueue: "my-app-jobs-dlq",
+        }),
+      ],
+      env: {
+        ENVIRONMENT: bindings.text("production"),
+        COVERS: bindings.r2({ name: "my-app-covers" }),
+        HYPERDRIVE: bindings.hyperdrive({ id: "xxxxxxxx" }),
+        ASSETS: bindings.assets(),
+      },
+    },
+  };
+});
+```
+
+プレビュー環境では利用できないリソース（例えば Worker Previews で登録できない Queue Consumer など）をプレビュー側でのみ除外したり、バケットやレート制限の名前空間をプレビュー用に切り替えたりといった制御が、TypeScript の通常の `if` 文で明快に記述できます。
+
 ---
 
-# 2. シークレット・環境変数の設定と型定義（`cf workers types`）
+## Step 2: シークレット・環境変数と型定義（`cf workers types`）
 
-### `cf workers types` の仕組み
+### 2-1. `cf workers types` の仕組み
 - **旧 `wrangler types`**: `.dev.vars` などのファイルを読み込んで `worker-configuration.d.ts`（`interface Env`）を生成していました。
 - **新 `cf workers types`**: `cloudflare.config.ts` の設定内容から型（`InferEnv`）を逆算し、`.cloudflare/types/index.d.ts` に生成します。
 
@@ -97,7 +169,7 @@ import { bindings, defineConfig } from "cf/config";
 export default defineConfig({
   worker: {
     name: "my-app",
-    compatibilityDate: "2025-12-13",
+    compatibilityDate: "2026-09-04",
     compatibilityFlags: ["nodejs_compat"],
     entrypoint: "./workers/app.ts",
     placement: { mode: "smart" },
@@ -117,7 +189,6 @@ export default defineConfig({
       DATABASE_URL: bindings.secret(),
       SECRET_KEY: bindings.secret(),
       GOOGLE_PROJECT_ID: bindings.secret(),
-      NEXT_PUBLIC_API_KEY: bindings.secret(),
     },
   },
 });
@@ -130,8 +201,7 @@ pnpm exec cf workers types
 # => .cloudflare/types/index.d.ts が生成される
 ```
 
-### ⚠️【注意】`bindings.secret()` はデプロイ時の必須シークレットになる
-ここが 1 つ目の重要なポイントです。
+### 2-2. ⚠️【重要】`bindings.secret()` はデプロイ時必須バリデーションがかかる
 
 `cloudflare.config.ts` に `bindings.secret()` を記載した変数は、デプロイ時に **Cloudflare 側で「必須シークレット（Required secrets）」としてバリデーション** されます。
 
@@ -147,16 +217,12 @@ pnpm exec cf workers types
 
 **本番環境で実際に必要となるシークレットのみを `bindings.secret()` に定義する** よう注意してください。
 
----
-
-# 3. `tsconfig` の更新と旧ファイルの整理
+### 2-3. `tsconfig` の更新と旧ファイルの削除
 
 型定義の出力先が変更されたため、TypeScript の設定を更新します。
 
-### `tsconfig.json`（または `tsconfig.cloudflare.json`）
-`worker-configuration.d.ts` への参照を `.cloudflare/types/**/*` に変更します。
-
 ```json
+// tsconfig.json（または tsconfig.worker.json 等）
 {
   "include": [
     "app/**/*",
@@ -174,12 +240,13 @@ git rm worker-configuration.d.ts
 
 ---
 
-# 4. `vite.config.ts` の調整（2 つの落とし穴と解決法）
+## Step 3: Vite / React Router との連携設定（`vite.config.ts`）
 
-ここが移行において最もハマりやすい部分です。
+フルスタックフレームワーク（React Router / TanStack Start など）と組み合わせる場合、`vite.config.ts` で 2 つの重要な調整が必要です。
 
-### 落とし穴①: `wrangler.jsonc` を消すと `dev` が 404 になる
-`wrangler.jsonc` を削除して `react-router dev` を起動すると、Vite の静的ファイルサーバーだけが動き、肝心の Worker が読み込まれず `http://localhost:3000/` が 404 になる事象が発生します。
+### 3-1. `experimental: { newConfig: true }` の有効化（404 解決）
+
+`wrangler.jsonc` を削除して開発サーバーを起動すると、Vite の静的ファイルサーバーだけが動き、肝心の Worker が読み込まれず `http://localhost:3000/` が 404 になる事象が発生します。
 
 **原因:**
 `@cloudflare/vite-plugin` はデフォルトでは `wrangler.json` / `wrangler.jsonc` を探索します。`cloudflare.config.ts` を読み込ませるには、プラグインのオプションで **`experimental: { newConfig: true }`** を指定する必要があります。
@@ -191,29 +258,25 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 export default defineConfig({
   plugins: [
     cloudflare({
+      experimental: {
+        newConfig: true, // これが必要！
+      },
       viteEnvironment: { name: "ssr" },
-      experimental: { newConfig: true }, // これが必要！
     }),
     // ...
   ],
 });
 ```
 
-これを指定することで、`wrangler.jsonc` が存在しなくても直接 `cloudflare.config.ts` が読み込まれ、ローカル開発環境（`dev`）で Worker や `.dev.vars` が正しくマウントされるようになります。
+これを指定することで、`wrangler.jsonc` が存在しなくても直接 `cloudflare.config.ts` が読み込まれ、ローカル開発環境（`dev`）で Worker や `.dev.vars` が正しくマウントされます。
 
----
+### 3-2. BOS 出力とクライアントマニフェストの同期（ENOENT 解決）
 
-### 落とし穴②: `cf deploy` で React Router のマニフェストが見つからずエラーになる
 `cf deploy`（または `--dry-run`）を実行すると、CLI は `CLOUDFLARE_VITE_FORCE_BUILD_OUTPUT=true` という環境変数を付与してビルドを実行します。
 
 このとき、`@cloudflare/vite-plugin` は Cloudflare の新しい仕様である **Build Output Specification (BOS)** に従い、クライアントの出力先（`outDir`）を強制的に `.cloudflare/output/v0/workers/default/assets` に変更します。
 
-しかし、React Router（v8 / Remix 系統）の SSR ビルド処理は、クライアントマニフェストの出力先として `build/client/.vite/manifest.json` をハードコードで探索するため、以下のファイル不在エラーが発生します：
-
-```text
-[plugin react-router:virtual-modules]
-Error: ENOENT: no such file or directory, open '.../build/client/.vite/manifest.json'
-```
+しかし、React Router などの SSR ビルド処理は、クライアントマニフェストの出力先として `build/client/.vite/manifest.json` を探索するため、ファイル不在エラー（`ENOENT`）が発生します。
 
 **解決策:**
 クライアントビルドが完了したタイミングで、生成されたアセットディレクトリを React Router が参照する `build/client` へコピーする同期プラグインを `vite.config.ts` に追加します。
@@ -228,8 +291,8 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [
     cloudflare({
-      viteEnvironment: { name: "ssr" },
       experimental: { newConfig: true },
+      viteEnvironment: { name: "ssr" },
     }),
     // React Router と Cloudflare BOS の出力先差異を吸収する同期プラグイン
     {
@@ -250,24 +313,26 @@ export default defineConfig({
 });
 ```
 
-このプラグインにより、Cloudflare の Build Output Specification と React Router のビルド要件が両立し、エラーなくビルド＆デプロイが完了します。
+このプラグインにより、Cloudflare の Build Output Specification とフレームワークのビルド要件が両立し、エラーなくビルド＆デプロイが完了します。
 
 ---
 
-# 5. `package.json` のスクリプト更新
+## Step 4: `package.json` のスクリプト更新
 
-CLI が `wrangler` から `cf` に移行したことで、コマンドの書き方も変わります。
+CLI が `wrangler` から `cf` に移行したことで、コマンド体系も整理されます。
+
+### 4-1. コマンド対比表（`wrangler` vs `cf`）
 
 | 用途 | 旧コマンド (`wrangler`) | 新コマンド (`cf`) | 備考 |
 | :--- | :--- | :--- | :--- |
 | **開発 (ローカル)** | `wrangler dev` | `cf dev` | 事前ビルド不要。Vite 開発サーバーに委譲 |
-| **型生成** | `wrangler types` | `cf workers types` | `cloudflare.config.ts` から生成 |
+| **型生成** | `wrangler types` | `cf workers types` | `cloudflare.config.ts` から型を逆算 |
 | **本番デプロイ** | `wrangler deploy` | `cf deploy` | 自動でビルドが実行される |
-| **ドライラン** | `wrangler deploy --dry-run` | `cf deploy --dry-run` | バインディング検証・事前チェック |
+| **ドライラン** | `wrangler deploy --dry-run` | `cf deploy --dry-run` | バインディング検証・BOS アセット検証 |
 | **シークレット一括反映** | `wrangler secret bulk .env.production` | `cf deploy --secrets-file .env.production` | デプロイ時にシークレットを注入 |
 | **ログ監視** | `wrangler tail` | （`wrangler tail` を維持） | ※ 現時点の `cf` には対話型 tail コマンドが未実装 |
 
-### `package.json` の変更例
+### 4-2. `package.json` の変更例
 
 ```json
 {
@@ -281,36 +346,116 @@ CLI が `wrangler` から `cf` に移行したことで、コマンドの書き�
     "deploy": "cf deploy",
     "dry-run": "cf deploy --dry-run",
     "deploy-secret": "cf deploy --secrets-file .env.production",
-    "log": "wrangler tail dr-blog"
+    "log": "wrangler tail my-app"
   }
 }
 ```
 
-> **Q. `cf dev` で起動する場合、事前ビルドは必要？**
-> **A. 不要です。**
-> 以前の `wrangler dev` ではビルド済み成果物（`build/server/index.js`）を参照するケースが一般的でしたが、`cf dev` はプロジェクトの Vite / React Router 開発サーバーを自動検知して直接委譲します。ソースコードをオンザフライで読み込み、HMR（ホットリロード）が有効な状態で起動します。
+> **Q. `cf dev` で起動する場合、事前ビルドは必要？**  
+> **A. 不要です。**  
+> 以前の `wrangler dev` ではビルド済み成果物（`build/server/index.js`）を参照するケースが一般的でしたが、`cf dev` はプロジェクトの Vite / React Router 開発サーバーを自動検知して直接委譲します。ソースコードをオンザフライで読み込み、HMR（ホットリロード）が有効な状態で高速に起動します。
 
 ---
 
-# 6. 旧設定ファイル（`wrangler.jsonc`）の削除
+## Step 5: 実務・本番運用で直面する 3 つの落とし穴
 
-すべての動作確認（型チェック、ローカル起動、ドライラン）が完了したら、設定の二重管理を防ぐために旧設定ファイルを削除します。
+フルスタックアプリやモノレポ（複数 Worker やキュー処理 Worker が同居する構成）を実際に運用・移行する中で判明した実践的な落とし穴です。
 
-```bash
-git rm wrangler.jsonc
+### 落とし穴①: Vite を使わない純粋な Worker での Windows 特有エラー（`spawn EFTYPE`）
+
+Vite を組み込んだ Web アプリ（`@cloudflare/vite-plugin` 導入済み）では `cf deploy` が正常に動きますが、**キューの処理やバッチ処理を行う Vite を使わないシンプルな Worker**（例: `entrypoint: "src/index.ts"` のみ）を Windows 環境で `cf deploy` しようとすると、以下のエラーが発生します：
+
+```text
+├  Build
+|  Delegating to Wrangler
+
+┌ Error
+│ spawn EFTYPE
+└
 ```
 
-### 最終チェックリスト
-- [ ] `pnpm run typecheck` (`tsc --noEmit`): 型エラーが出ないこと
-- [ ] `pnpm run typegen` (`cf workers types`): `.cloudflare/types/index.d.ts` が正常に出力されること
-- [ ] `pnpm run dev` または `cf dev`: ローカルで 404 にならず正常にページが表示されること
-- [ ] `pnpm run dry-run` (`cf deploy --dry-run`): ビルドおよびバインディング検証が通過すること
-- [ ] `pnpm run deploy` (`cf deploy`): 本番環境へ正常にデプロイされること
+#### 原因の解析
+`cf` CLI（`1.0.0-beta.2`）は、プロジェクト内に `@cloudflare/vite-plugin` が見つからない場合、フォールバックとして Wrangler に処理を委譲（`Delegating to Wrangler`）します。
+その際、`cf` 内部（`spawn-*.mjs`）で以下のように直接 `.js` ファイルを指定して子プロセスを起動しようとします：
+
+```javascript
+// cf CLI 内部の簡易コード
+spawn("node_modules/wrangler/bin/cf-wrangler.js", ["deploy", ...], { ... });
+```
+
+Linux や macOS ではシバン（`#!/usr/bin/env node`）が解釈されるため動きますが、**Windows カーネルは `.js` ファイルを実行可能バイナリ（PE 形式）として直接 spawn できない**ため、OS から `EFTYPE`（実行不能フォーマット）エラーが返されます。
+
+#### 対処法
+- **Vite なしの軽量 Worker**: 現時点のベータ版では、Windows ローカルからのデプロイや起動には `wrangler deploy` / `wrangler dev` をそのまま維持するのが最も堅牢です（Linux 上の CI / CD コンテナでは問題なく動きます）。
+- あるいは、その Worker にも Vite / `@cloudflare/vite-plugin` を導入してバンドルさせる構成にします。
 
 ---
 
-# まとめ
+### 落とし穴②: `cf deploy` では `--var` オプションが使えない
 
-Cloudflare の新 CLI `cf` と `cloudflare.config.ts` は、TypeScript の型チェックや IDE・AI エージェントとの親和性が非常に高く、今後の Cloudflare 開発のスタンダードになっていくツールです。
+従来の `wrangler deploy` では、特定のデプロイ時のみ環境変数を上書きするために `--var KEY:VALUE` オプションが使えました：
 
-現時点のベータ版では、フレームワークとの組み合わせにおいて出力ディレクトリの差異やオプション指定（`experimental.newConfig`）などの注意点がありますが、本記事の手順を踏むことでスムーズに移行することができます。移行を検討されている方の参考になれば幸いです。
+```bash
+# wrangler では動いていたコマンド例
+wrangler deploy --secrets-file secrets.json --var FEATURE_FLAG:true
+```
+
+しかし、現行の `cf deploy`（`1.0.0-beta.2`）のヘルプを確認すると、**`--var` フラグは提供されていません**。
+
+```text
+Options:
+  --prebuilt            Deploy existing Build Output Specification files without building
+  --secrets-file        Path to a file containing secrets to upload with the version (JSON or .env format)
+  --dry-run             Build a project and run checks without actually uploading the Worker
+  --worker              Name of the Worker in the Build Output to use
+```
+
+#### 対処法
+動的に注入したい非シークレット変数がある場合：
+1. `--secrets-file` の JSON または `.env` ファイルにその変数も含めて渡す（`--secrets-file` は加算継承されるため、ファイル内に書いた変数が注入されます）。
+2. または `cloudflare.config.ts` 側で `process.env.FEATURE_FLAG` を参照し、実行時環境変数を読み取って `bindings.text()` に渡すように記述します。
+
+---
+
+### 落とし穴③: `wrangler.jsonc` を安易に削除してはならないケース
+
+個人ブログなどの単一プロジェクトであれば `wrangler.jsonc` を削除して移行完了で問題ありませんが、CI / CD やテストが整備された本番プロジェクトでは、**安易に `wrangler.jsonc` を消すとパイプラインが壊れる**場合があります。
+
+特に以下の依存がないか事前にチェックしてください：
+1. **GitHub Actions（CI パイプライン）**:
+   - `ci.yml` 内で `test -f apps/app/wrangler.jsonc` や `grep -q '"previews"' wrangler.jsonc` のようなバリデーションが存在しないか。
+   - `package.json` 内の `"deploy:preview": "wrangler preview"` のコマンド名を CI が検証していないか。
+2. **E2E テスト（Playwright 等）**:
+   - ローカルでの E2E 実行時に `wrangler dev -c wrangler.e2e.jsonc` のように専用設定ファイルを参照していないか。
+3. **リポジトリ内の preflight 検証スクリプト**:
+   - Rate Limit や Queue の設定値を `wrangler.jsonc` からパースして整合性検証を行うカスタムスクリプトが存在しないか。
+
+これらが存在する場合、**`cloudflare.config.ts` と `wrangler.jsonc` を安全に並行維持**し、CI やテストのスクリプト側を `cloudflare.config.ts` 対応に改修するまでは無理に `wrangler.jsonc` を削除しない運用をおすすめします。
+
+---
+
+## Step 6: 最終チェックリスト
+
+移行作業が完了したら、以下のチェックリストで全体の整合性を確認します。
+
+- [ ] **型チェック**: `tsc --noEmit` でリポジトリ全体に型エラーが出ないこと
+- [ ] **型定義生成**: `cf workers types` で `.cloudflare/types/index.d.ts` が正常に出力されること
+- [ ] **ローカル起動**: `pnpm run dev` または `cf dev` で 404 にならず、ページが正常に表示されること
+- [ ] **デプロイドライラン**: `cf deploy --dry-run` でビルドが成功し、全バインディングと静的アセット（BOS）が正しく認識されること
+- [ ] **CI / E2E テスト**: GitHub Actions やローカル E2E が設定ファイル変更後も green を維持していること
+- [ ] **本番デプロイ**: `cf deploy` で本番環境へ正常にデプロイされること
+
+---
+
+## まとめ
+
+Cloudflare の新 CLI `cf` と `cloudflare.config.ts` は、TypeScript の型チェックや IDE・AI エージェントとの親和性が非常に高く、今後の Cloudflare 開発のスタンダードになっていく強力なツールです。
+
+一方で、現行バージョン（`1.0.0-beta`）では以下の点に注意が必要です：
+- **React Router / Vite 連携**: `experimental.newConfig: true` の指定や BOS 出力ディレクトリの同期が必要。
+- **シークレット**: `bindings.secret()` はデプロイ時必須バリデーションがかかる。
+- **純粋な Worker**: Windows 環境で Wrangler への委譲時に `spawn EFTYPE` が発生するケースがある。
+- **CLI フラグ**: `--var` オプションが廃止されているため `--secrets-file` や TypeScript 側の `process.env` で吸収する。
+- **CI / E2E**: 既存のチェックスクリプトとの兼ね合いで `wrangler.jsonc` の共存が必要な場合がある。
+
+これらの実践的なポイントをあらかじめ把握しておくことで、本番アプリケーションでもトラブルなくスムーズに `cf` への移行を実現できます。ぜひお試しください！
