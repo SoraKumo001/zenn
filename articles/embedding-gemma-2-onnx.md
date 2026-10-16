@@ -3,7 +3,7 @@ title: "Embedding Gemma 2 を C# から使用してマルチモーダル対応�
 emoji: "🦔"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["onnx", "directml", "dotnet", "winui", "embedding"]
-published: false
+published: true
 ---
 
 画像・PDF・動画・テキストを「自然言語」や「画像」で横断検索できるデスクトップアプリを、完全ローカルで作りました。埋め込みモデルには Google DeepMind の EmbeddingGemma 2 の ONNX 版を使い、C#（WinUI 3）から ONNX Runtime + DirectML で直接動かしています。
@@ -23,6 +23,8 @@ published: false
 ---
 
 ## 1. 作ったもの
+
+https://github.com/SoraKumo001/embedding-search-viewer/releases
 
 - 検索対象: 画像（jpg / png / webp / bmp）、PDF、動画（mp4 / wmv / avi / mov / webm / mkv / flv）
 - 検索方法: 自然言語、画像（類似画像検索）、キーワード全文検索（SQLite FTS5）を併用
