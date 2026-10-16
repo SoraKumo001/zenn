@@ -24,6 +24,8 @@ published: true
 
 ## 1. 作ったもの
 
+Windows上で動作します
+
 https://github.com/SoraKumo001/embedding-search-viewer/releases
 
 - 検索対象: 画像（jpg / png / webp / bmp）、PDF、動画（mp4 / wmv / avi / mov / webm / mkv / flv）
