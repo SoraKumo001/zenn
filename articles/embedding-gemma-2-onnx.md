@@ -346,6 +346,52 @@ RRF の順位計算は、ベクトルのスコアで並べ替えて順位を振�
 
 期間・サイズ・フォルダ・メディア種別の絞り込みは、候補のチャンクに対してかけます。ここで 1 つバグを作りかけました。全文検索だけでヒットした項目は、候補一覧を通らないため、フィルタを素通りします。最終的な結果を作る段階でも、同じフィルタを再度かける必要があります（これを外すとテストが落ちるようにしてあります）。
 
+### 5.4 12 万件での高速化: sqlite-vec + 2 段階検索
+
+インデックスが 12 万件になると、検索に 10 秒以上かかるようになりました。内訳は次の 3 つです。
+
+- 埋め込みの読み込み: 768 次元 × float32 × 12 万件で約 350 MB の BLOB を、更新のたびに DB から全件読み直す。
+- 同一画像の判定（6.2 節）: 12 万回の `SHA256.HashData`。
+- 単スレッドの全走査 + 全件ソート。
+
+そこで、SQLite のベクトル検索拡張 [sqlite-vec](https://github.com/asg017/sqlite-vec)（0.1.9）を使い、`vec0` の仮想テーブルを「派生インデックス」として追加しました。元の `MediaChunks.Embedding` は真実のまま残し、INSERT / DELETE のトリガで同期、起動時に未登録分をバックフィルします。拡張が読めない環境でも検索が壊れないよう、ベクトル → 全走査の順にフォールバックします（NuGet は `HiraokaHyperTools.sqlite-vec`。`vec0.dll` は win-x64 のみなので、この経路は x64 限定です）。
+
+```sql
+CREATE VIRTUAL TABLE VecMediaChunks USING vec0(
+    chunk_id INTEGER PRIMARY KEY,
+    embedding float[768] distance_metric=cosine,
+    embedding_coarse bit[768]
+);
+```
+
+意外だったのは、`float[768]` の素朴な KNN は、メモリ上の全走査より**遅かった**ことです（下の計測で 379 ms 対 205 ms）。vec0 はベクトルをチャンク単位で SQLite のページキャッシュ経由で読むため、この規模では `TensorPrimitives` の全走査に負けます。効いたのは 2 段階検索でした。`bit[768]` の列に 1 ビット量子化したベクトルを持ち、粗い距離で候補だけ絞って（`k × oversample`、既定 8）、正確なベクトルで並べ直します。
+
+```sql
+WITH coarse AS (
+    SELECT chunk_id FROM VecMediaChunks
+    WHERE embedding_coarse MATCH vec_quantize_binary(@q)
+    ORDER BY distance LIMIT @limit
+)
+SELECT c.chunk_id, vec_distance_cosine(m.Embedding, @q) AS distance
+FROM coarse c
+JOIN MediaChunks m ON m.rowid = c.chunk_id
+ORDER BY distance LIMIT @k;
+```
+
+ここでもう 1 つハマりました。並べ直しの `JOIN` 先を vec0 の表にすると、プランナが候補ごとにインデックス全体を走査して、粗選別より遅くなります。真実の表（`rowid` の B-tree）のほうに `JOIN` したら約 7 倍速くなりました。
+
+計測は、リポジトリ内の opt-in ベンチマーク（`ESV_RUN_BENCHMARKS=1` で実行）で、12 万 × 768 次元の合成データ、20 クエリ、`k = 10` です（Release）。
+
+| 経路 | p50 | recall@10 | 全走査比 |
+|---|---|---|---|
+| 全走査（従来） | 204.9 ms | 1.000 | 1.0 倍 |
+| 素朴な vec KNN | 378.9 ms | 1.000 | 0.5 倍 |
+| 2 段階（oversample = 8） | 17.6 ms | 1.000 | 11.6 倍 |
+
+検索エンジン側は、返ってきた候補にだけ正確なコサイン類似度を計算し直すので、RRF や FTS、同一画像のまとめの振る舞いは変わりません。
+
+ただし正直に書くと、この recall は「クラスタの深さが候補予算（`k × oversample = 80` 件）に収まる範囲」での値です。予算より深いクラスタがあるデータでは recall が落ちます（試した限り oversample を上げれば回復します）。実データでの検証はこれからで、結果が出たら追記します。
+
 ---
 
 ## 6. 実データで見つけた問題
@@ -495,6 +541,8 @@ public sealed class EmbeddingServiceHost : IEmbeddingService
 | 一般的な検索語で白紙が上位に | 白紙の埋め込みが、どの文章にも中程度に似る | ほぼ一色の画像をインデックスしない |
 | 同点の順位が毎回変わる | 同一スコアの並びが DB の格納順に依存 | 同点はファイルパスで決める |
 | 全文検索だけでヒットしたものが、絞り込みを素通り | 候補一覧を通らない | 最終段でも、同じフィルタをかける |
+| vec0 の素朴な KNN が全走査より遅い | チャンク読みがページキャッシュ経由 | 1 ビット量子化の粗選別 + 並べ直しの 2 段階に |
+| 並べ直しの JOIN が粗選別より遅い | vec0 の仮想表に JOIN すると全体走査 | 真実の表（`rowid` の B-tree）に JOIN |
 
 あと 1 つ、計測の方法として、次の 2 つが役に立ちました。
 

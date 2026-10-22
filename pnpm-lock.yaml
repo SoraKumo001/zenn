@@ -9,13 +9,19 @@ importers:
   .:
     devDependencies:
       zenn-cli:
-        specifier: 0.5.6
-        version: 0.5.6(@types/markdown-it@14.2.0)(supports-color@7.2.0)
+        specifier: 0.5.7
+        version: 0.5.7(@types/markdown-it@14.2.0)(supports-color@7.2.0)
       zenn-rag:
         specifier: ^0.1.2
         version: 0.1.2(@types/node@26.4.1)(apache-arrow@18.1.0)(supports-color@7.2.0)
 
 packages:
+
+  '@ai-sdk/anthropic@4.0.85':
+    resolution: {integrity: sha512-nfv/vtR4HuNUZyCzdK37d2CaW1mzeZJlzSmC+4Jn8Dn8ces8R9HOAgF9d+8iwx+SedmzurKQQmNvJ7xYGBcPMQ==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
 
   '@ai-sdk/fireworks@3.0.47':
     resolution: {integrity: sha512-JRCoKAi6/XEDtyTKBrew2oWekdFglnDjRvFtPfcHTPPwDq1hjiWgki+j66HNUJXqqA/J7W1XRQ1mYn0Yb49f7w==}
@@ -47,8 +53,18 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
+  '@ai-sdk/provider-utils@5.0.65':
+    resolution: {integrity: sha512-LCugcsP8oWmdeI3BASf4Fuo1wiC6Qx0YrefFssl7n12s+LV4DNi5RdwWQrtrB4oek3GGNQRN/h/NSwVZM2eHKw==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
   '@ai-sdk/provider@4.0.10':
     resolution: {integrity: sha512-fX2ENAc7iDpZ+Wp4+Rk06Usn/Ys7dI9uAkGv0jlF6XVrW13NkRWx5Ou+U6lIM2E1fTLkCs16GGrUAaVvroag7A==}
+    engines: {node: '>=22'}
+
+  '@ai-sdk/provider@4.0.31':
+    resolution: {integrity: sha512-3wJnwVTFg8SwOyoZCv+ov7Re2GB+7IQnU5a5MYJACrtiWDDUHgqTBeeesq2MB2ddgojzL8hgWleltwpAgtUqfg==}
     engines: {node: '>=22'}
 
   '@azu/format-text@1.0.2':
@@ -270,6 +286,13 @@ packages:
     peerDependenciesMeta:
       '@cfworker/json-schema':
         optional: true
+
+  '@openrouter/ai-sdk-provider@3.1.0':
+    resolution: {integrity: sha512-BQy1TA9fKrh47s9ivsO6FY5QimN7GUF0i8Qon3pkxQclEgShso0dClpcWn8OIyPLEZZPFaFKgI8TW4S/O0p0Dw==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      ai: ^7.0.0
+      zod: ^3.25.76 || ^4.1.8
 
   '@opentelemetry/api@1.9.1':
     resolution: {integrity: sha512-gLyJlPHPZYdAk1JENA9LeHejZe1Ti77/pTeFm/nMXmQH/HFZlcS/O2XJB+L8fkbrNSqhdtlvjBVjxwUYanNH5Q==}
@@ -1744,13 +1767,13 @@ packages:
     resolution: {integrity: sha512-YgvUTfwqyc7UXVMrB+SImsVYSmTS8X/tSrtdNZMImM+n7+QTriRXyXim0mBrTXNeqzVF0KWGgHPeiyViFFrNDw==}
     engines: {node: '>=18'}
 
-  zenn-cli@0.5.6:
-    resolution: {integrity: sha512-KTSj+X2CcMdraSqmzoYsXDafcXuAOD1UbXFwbzgTeyRXAluhbWttAA5cDFj1UV0oCfxB8P8oFm0f+uMTJt1muQ==}
+  zenn-cli@0.5.7:
+    resolution: {integrity: sha512-RC22iYXbA7Nai8swEDxcWEM98Fz7UgAv1LK3HoD3PTqNE6sLgy8RpQtRImPeqz7l8Up6J+MtUaTn0FN1QkHsrw==}
     engines: {node: '>=22.12.0'}
     hasBin: true
 
-  zenn-markdown-html@0.5.6:
-    resolution: {integrity: sha512-JjYcSJIs7b4v/nUTNOx/BpNgQMbJntUvV65nW33DNnUS2cBv2LZFZI1mF3mGn3vrwh0UVRpnXAkfUHO47p4VUQ==}
+  zenn-markdown-html@0.5.7:
+    resolution: {integrity: sha512-c+NKB4h5DUopgCEHEaohtK0oGaydcO7YnTRr1xrOTEx4k1oM+fAYsMr6+GUMcmb9ks6ey8Aqk+RNe58EiEh/RA==}
     engines: {node: '>=22.12.0'}
 
   zenn-rag@0.1.2:
@@ -1769,6 +1792,12 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
+
+  '@ai-sdk/anthropic@4.0.85(zod@4.5.4)':
+    dependencies:
+      '@ai-sdk/provider': 4.0.31
+      '@ai-sdk/provider-utils': 5.0.65(zod@4.5.4)
+      zod: 4.5.4
 
   '@ai-sdk/fireworks@3.0.47(zod@4.5.4)':
     dependencies:
@@ -1805,7 +1834,20 @@ snapshots:
       undici: 7.29.1
       zod: 4.5.4
 
+  '@ai-sdk/provider-utils@5.0.65(zod@4.5.4)':
+    dependencies:
+      '@ai-sdk/provider': 4.0.31
+      '@standard-schema/spec': 1.1.0
+      '@workflow/serde': 4.1.0
+      eventsource-parser: 3.1.1
+      undici: 7.29.1
+      zod: 4.5.4
+
   '@ai-sdk/provider@4.0.10':
+    dependencies:
+      json-schema: 0.4.0
+
+  '@ai-sdk/provider@4.0.31':
     dependencies:
       json-schema: 0.4.0
 
@@ -1989,6 +2031,11 @@ snapshots:
       zod-to-json-schema: 3.25.2(zod@4.5.4)
     transitivePeerDependencies:
       - supports-color
+
+  '@openrouter/ai-sdk-provider@3.1.0(ai@7.0.93(zod@4.5.4))(zod@4.5.4)':
+    dependencies:
+      ai: 7.0.93(zod@4.5.4)
+      zod: 4.5.4
 
   '@opentelemetry/api@1.9.1': {}
 
@@ -3632,10 +3679,12 @@ snapshots:
   yallist@5.0.0:
     optional: true
 
-  zenn-cli@0.5.6(@types/markdown-it@14.2.0)(supports-color@7.2.0):
+  zenn-cli@0.5.7(@types/markdown-it@14.2.0)(supports-color@7.2.0):
     dependencies:
+      '@ai-sdk/anthropic': 4.0.85(zod@4.5.4)
       '@ai-sdk/fireworks': 3.0.47(zod@4.5.4)
       '@ai-sdk/openai': 4.0.59(zod@4.5.4)
+      '@openrouter/ai-sdk-provider': 3.1.0(ai@7.0.93(zod@4.5.4))(zod@4.5.4)
       '@secretlint/node': 11.7.1(supports-color@7.2.0)
       '@secretlint/secretlint-rule-preset-recommend': 11.7.1
       ai: 7.0.93(zod@4.5.4)
@@ -3647,14 +3696,13 @@ snapshots:
       configstore: 8.0.0
       express: 5.2.1(supports-color@7.2.0)
       fs-extra: 11.4.1
-      gray-matter: 4.0.3
       image-size: 2.0.4
       js-yaml: 5.4.3
       node-fetch: 3.3.2
       open: 10.2.0
       package-manager-detector: 1.6.0
       ws: 8.21.3
-      zenn-markdown-html: 0.5.6(@types/markdown-it@14.2.0)
+      zenn-markdown-html: 0.5.7(@types/markdown-it@14.2.0)
       zod: 4.5.4
     transitivePeerDependencies:
       - '@types/markdown-it'
@@ -3662,7 +3710,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  zenn-markdown-html@0.5.6(@types/markdown-it@14.2.0):
+  zenn-markdown-html@0.5.7(@types/markdown-it@14.2.0):
     dependencies:
       cheerio: 1.2.0
       markdown-it: 14.3.2
