@@ -1,5 +1,5 @@
 ---
-title: "Next.js で TypeScript7.1 の Content Mappers を使い、*.graphql ファイルを直接流し込む"
+title: "Next.js で TypeScript7.1 の Content Mappers を使い、*.graphql ファイルを直接使用する"
 emoji: "⚡"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["typescript", "graphql", "nextjs", "urql", "react"]
