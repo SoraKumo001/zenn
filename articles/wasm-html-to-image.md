@@ -8,7 +8,7 @@ published: true
 
 Web アプリケーションで動的に OGP（Open Graph Protocol）画像やソーシャルカード、バナーを生成したいとき、どのようなツールを選んでいるでしょうか？
 
-これまでは、Puppeteer や Playwright などのヘッドレスブラウザを起動してスクリーンショットを撮るか、Vercel の Satori、Rust 製の Takumi といった軽量エンジンを使うのが主流でした。しかし、Puppeteer は「起動やメモリが重く Edge で動かない」、Satori は「CSS の制約が厳しく静止画 SVG のみ」、Takumi は高速でアニメーションに対応するものの「日本語の縦書きができない」「`backdrop-filter` などの高度な CSS が使えない」といった課題がそれぞれ存在していました。
+これまでは、Puppeteer や Playwright などのヘッドレスブラウザを起動してスクリーンショットを撮るか、Vercel の Satori、Rust 製の Takumi といった軽量エンジンを使うのが主流でした。しかし、Puppeteer は「起動やメモリが重く Edge で動かない」、Satori は「CSS の制約が多く静止画 SVG 出力のみ」、Takumi は高速でアニメーションや豊富な CSS に対応するものの「日本語の縦書き（`writing-mode`）ができない」「`:has()` セレクタや URL の直接キャプチャ、画像変換処理には非対応」といった課題がそれぞれ存在していました。
 
 こうした課題をクリアし、ブラウザ不要・ネイティブ依存ゼロで、高度な CSS・日本語縦書き・アニメーションまでブラウザ同等レベルのレンダリングを実現する npm パッケージを作成しました。それが `wasm-html-to-image` です。
 
@@ -39,12 +39,12 @@ flowchart TD
   end
 
   subgraph Gen2["第2世代: Satori"]
-    S["Satori (Yoga WASM)"] -->|"JSX → SVG文字列"| S_SVG["SVG"]
+    S["Satori (Yoga / Taffy)"] -->|"JSX → SVG文字列"| S_SVG["SVG"]
     S_SVG -->|"別途 resvg / sharp で変換"| S_OUT["軽量だが2段階・CSS制限大"]
   end
 
   subgraph Gen3["第3世代: Takumi"]
-    T["Takumi (Rust / Taffy)"] -->|"単一パイプライン"| T_OUT["高速・アニメーション対応だが縦書きや高度CSSは非対応"]
+    T["Takumi (Rust / Taffy + Blink移植)"] -->|"単一パイプライン"| T_OUT["高速・アニメーション対応だが縦書きやURL直取得・画像処理は非対応"]
   end
 
   subgraph Gen4["第4世代: wasm-html-to-image"]
@@ -54,29 +54,31 @@ flowchart TD
 
 それぞれのエンジンの違いを整理したのが以下の比較表です。
 
-| 項目 | Satori (Vercel) | Takumi (takumi-js) | wasm-html-to-image |
+| 項目 | Satori (`@vercel/og` 等) | Takumi (`takumi-js` / `takumi-pdf`) | wasm-html-to-image |
 | :--- | :--- | :--- | :--- |
-| コアエンジン | Yoga (C++ WASM) | Taffy + Parley (Rust) | litehtml + Google Skia + HarfBuzz (C++ WASM) |
-| 出力パイプライン | JSX $\to$ SVG 文字列<br>*(※PNG化には resvg 等が別途必要)* | JSX/HTML $\to$ 画像 (直出力) | HTML/JSX/URL/画像 $\to$ 画像 / 動画 / PDF (直出力) |
-| CSS サポート | Flexbox の一部サブセットのみ<br>*(Grid・疑似要素・高度なCSS不可)* | Flexbox / 一部 Grid<br>*(速度優先、`backdrop-filter` 等は非対応)* | Flexbox / Grid, 疑似要素(`::before/after`), `:has()`, `clip-path`, `backdrop-filter` 等ほぼブラウザと同等 |
-| 日本語・縦書き | ❌ 非対応（横書きのみ） | ❌ 非対応 | ⭕ 完全対応 (`writing-mode: vertical-rl`, 縦中横, HarfBuzz) |
+| コアエンジン | Yoga / Taffy (WASM) | Taffy + Blink移植 + HarfRust + tiny-skia (Rust) | litehtml + Google Skia + HarfBuzz (C++ WASM) |
+| 出力パイプライン | JSX $\to$ SVG 文字列<br>*(※PNG化には resvg 等が別途必要)* | JSX/HTML $\to$ 画像 / SVG / 動画<br>*(※PDFは別パッケージ `takumi-pdf`)* | HTML/JSX/URL/画像 $\to$ 画像 / 動画 / PDF (単一APIで直出力) |
+| 対応フォーマット | `svg` *( `@vercel/og` は `png` )* | `png`, `jpeg`, `webp`, `ico`, `svg`, `apng`, `gif`, `pdf` | `png`, `jpeg`, `webp`, `avif`, `jxl`, `tiff` (CMYK対応), `svg`, `apng`, `gif`, `pdf` (CMYK対応), `thumbhash`, `raw` |
+| CSS サポート | Flexbox 中心のサブセット<br>*(最新 0.63 は一部 Grid 対応、テーブルや高度CSS不可)* | Flexbox / Grid / Table, 疑似要素, 各種フィルタ等に対応<br>*(※`:has()` や PDF 時の `backdrop-filter` / `blur()` は非対応)* | Flexbox / Grid / Table, 疑似要素(`::before/after`), `:has()`, `clip-path`, `backdrop-filter` 等ほぼブラウザと同等 |
+| 日本語・縦書き | ❌ 非対応（横書きのみ） | ❌ 非対応（`writing-mode` なし） | ⭕ 完全対応 (`writing-mode: vertical-rl`, 縦中横, HarfBuzz) |
 | CSS アニメーション | ❌ 静止画のみ | ⭕ 対応 (`renderAnimation` で WebP / APNG / GIF) | ⭕ 完全対応 (`@keyframes` $\to$ Animated WebP / APNG / GIF) |
+| URL 直接キャプチャ | ❌ なし | ❌ なし | ⭕ URL 指定でリモート Web ページを直接レンダリング |
 | 画像処理 (Sharp代替)| ❌ なし | ❌ なし | ⭕ バッファ直接入力でリサイズ・クロップ・AVIF/JXL/TIFF・ThumbHash |
 | ブラウザ動作 | △ (別途ラスタライザが必要) | ⭕ WASM 動作 | ⭕ 単一 WASM でブラウザ完結動作（Playgroundあり） |
-| エッジ動作 | △ 依存関係が多く更新時に壊れやすい | ⭕ Cloudflare Workers 対応 | ⭕ ゼロ依存・単一 WASM (Workers / Edge-Light 対応) |
+| エッジ動作 | △ 依存関係が多く更新時に壊れやすい | ⭕ Cloudflare Workers 対応 (`@takumi-rs/wasm`) | ⭕ ゼロ依存・単一 WASM (Workers / Edge-Light 自動最適化) |
 
 wasm-html-to-image は実サイトのURLを指定してそのままレンダリングできます。つまりこのパッケージの開発は、インターネット上のあらゆるリソースに対して、実ブラウザとの動作の違いを検証できます。これを繰り返すことによって、どんどん問題を修正していくことが可能です。
 
 ### 主な特徴
 
-1. Google Skia によるブラウザ直系の高度な CSS・グラフィックス表現  
-   Satori はもちろん、Rust 製で高速な Takumi でもレンダリング速度や設計の都合上、`backdrop-filter`（すりガラス効果）や複雑なフィルタ、`clip-path`、`corner-shape`、高度な CSS セレクタ（`:has()`, `:not()`, 疑似要素）は省略または非対応となっています。`wasm-html-to-image` は Chromium の描画エンジンでもある Google Skia と litehtml を搭載しているため、ブラウザと同等のリッチなグラフィックス効果をそのまま描画できます。
+1. Google Skia × litehtml によるブラウザ直系の CSS・グラフィックス表現と URL 直接キャプチャ  
+   `wasm-html-to-image` は Chromium の描画エンジンでもある Google Skia と HTML/CSS エンジンの litehtml を搭載しています。Flexbox / Grid / Table はもちろん、`backdrop-filter`（すりガラス効果）、`clip-path`、`corner-shape`、`:has()` を含む高度な CSS セレクタや疑似要素までブラウザと同等に描画でき、さらに実サイトの URL を渡してそのままスクリーンショットを撮ることも可能です。
 
 2. HarfBuzz 統合による本格的な日本語・縦書き対応  
-   Satori や Takumi では対応が難しい「日本語の縦書き」や「縦中横（`text-combine-upright`）」に完全対応しています。多言語テキストシェーピングの業界標準である HarfBuzz を内包しているため、`writing-mode: vertical-rl` を指定するだけで、和風デザインや詩・小説の OGP、短冊カードを崩れることなく美しく生成できます。
+   Satori や Takumi では対応していない「日本語の縦書き（`writing-mode: vertical-rl` / `vertical-lr`）」や「縦中横（`text-combine-upright`）」に完全対応しています。多言語テキストシェーピングの業界標準である HarfBuzz を内包しているため、`writing-mode: vertical-rl` を指定するだけで、和風デザインや詩・小説の OGP、短冊カードを崩れることなく美しく生成できます。
 
-3. 「HTML レンダラー＋画像処理（Sharp 代替）」を単一の `render()` API に統合  
-   Takumi は静止画出力（`render`）、SVG（`renderSvg`）、アニメーション（`renderAnimation`）と用途ごとに関数が分かれていますが、`wasm-html-to-image` は単一の `render()` 関数にすべてが統合されたポリモーフィックな設計になっています。HTML 文字列を渡せば OGP 生成、`animation` オプションをつければ動画生成、画像バッファ（Buffer）を直接渡せばリサイズ・AVIF/TIFF 変換・ThumbHash 生成と、あらゆる画像ユースケースをこの 1 つのライブラリで完結できます。
+3. 「HTML レンダラー＋PDF＋画像処理（Sharp 代替）」を単一の `render()` API に統合  
+   Takumi は静止画出力（`render`）、SVG（`renderSvg`）、アニメーション（`renderAnimation`）、PDF（別パッケージ `takumi-pdf`）と用途ごとに関数やパッケージが分かれていますが、`wasm-html-to-image` は単一の `render()` 関数にすべてが統合されたポリモーフィックな設計になっています。HTML 文字列を渡せば OGP 生成、`animation` オプションをつければ動画生成、`format: "pdf"` で複数ページ PDF、画像バッファ（Buffer）を直接渡せばリサイズ・AVIF/JXL/TIFF 変換・ThumbHash 生成と、あらゆる画像・ドキュメントのユースケースをこの 1 つのライブラリで完結できます。
 
 4. 画像から画像への直接変換  
    HTML だけでなく、画像をソースにしてサイズやフォーマットの変換をかけることができます。画像を軽量化するライブラリとしても利用可能です。
@@ -132,6 +134,7 @@ graph LR
 | :--- | :--- | :--- |
 | `wasm-html-to-image` | ユニバーサル（推奨） | 自動判定（Cloudflare では `workerd`、他では `single` を自動選択） |
 | `wasm-html-to-image/single` | Node.js, バンドラ | 単一バンドルされた WASM バイナリ |
+| `wasm-html-to-image/index` | 高スループットサーバー | `loadHtmlToImageModule()` による明示的な初期化・インスタンス再利用 |
 | `wasm-html-to-image/workerd` | Cloudflare Workers | `WebAssembly.Module` 最適化 |
 | `wasm-html-to-image/edge-light` | Vercel Edge Runtime | Strict Edge 制約向け |
 | `wasm-html-to-image/workers` | Node.js, Web Workers | マルチスレッド Worker Pool による並列バッチ処理 |
@@ -467,9 +470,9 @@ await fs.writeFile("flyer.tiff", result.data);
 
 ## 7. まとめ
 
-`wasm-html-to-image` は、従来のヘッドレスブラウザが抱えていた「重さ・デプロイの難しさ」と、軽量 OGP エンジンが抱えていた「CSS 制約・高度なグラフィックス効果の欠如・日本語縦書き非対応」という課題を解消するライブラリです。
+`wasm-html-to-image` は、従来のヘッドレスブラウザが抱えていた「重さ・デプロイの難しさ」と、既存の軽量 OGP エンジンが抱えていた「CSS 制約・日本語縦書き非対応・URL 直接キャプチャや画像処理機能の欠如」という課題を解消するライブラリです。
 
-- Puppeteer から移行したいが、Satori や Takumi では CSS やグラフィックスの自由度が足りなかった
+- Puppeteer から移行したいが、Satori や Takumi では縦書きやブラウザ互換の CSS 表現、URL キャプチャが足りなかった
 - Cloudflare Workers などのエッジ環境で、安定して高品質な OGP や PDF を生成したい
 - 日本語の縦書きや、Skia の描画能力を活かした CSS アニメーション（WebP/GIF）を作りたい
 - ブラウザ上でサーバー負荷ゼロの画像エクスポート機能を作りたい
