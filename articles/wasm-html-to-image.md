@@ -58,7 +58,7 @@ flowchart TD
 | :--- | :--- | :--- | :--- |
 | コアエンジン | Yoga (C++ WASM) | Taffy + Parley (Rust) | litehtml + Google Skia + HarfBuzz (C++ WASM) |
 | 出力パイプライン | JSX $\to$ SVG 文字列<br>*(※PNG化には resvg 等が別途必要)* | JSX/HTML $\to$ 画像 (直出力) | HTML/JSX/URL/画像 $\to$ 画像 / 動画 / PDF (直出力) |
-| CSS サポート | Flexbox の一部サブセットのみ<br>*(Grid・疑似要素・高度なCSS不可)* | Flexbox / 一部 Grid<br>*(速度優先、`backdrop-filter` 等は非対応)* | CSS Grid, 疑似要素(`::before/after`), `:has()`, `clip-path`, `backdrop-filter` 等 |
+| CSS サポート | Flexbox の一部サブセットのみ<br>*(Grid・疑似要素・高度なCSS不可)* | Flexbox / 一部 Grid<br>*(速度優先、`backdrop-filter` 等は非対応)* | Flexbox / Grid, 疑似要素(`::before/after`), `:has()`, `clip-path`, `backdrop-filter` 等ほぼブラウザと同等 |
 | 日本語・縦書き | ❌ 非対応（横書きのみ） | ❌ 非対応 | ⭕ 完全対応 (`writing-mode: vertical-rl`, 縦中横, HarfBuzz) |
 | CSS アニメーション | ❌ 静止画のみ | ⭕ 対応 (`renderAnimation` で WebP / APNG / GIF) | ⭕ 完全対応 (`@keyframes` $\to$ Animated WebP / APNG / GIF) |
 | 画像処理 (Sharp代替)| ❌ なし | ❌ なし | ⭕ バッファ直接入力でリサイズ・クロップ・AVIF/JXL/TIFF・ThumbHash |
