@@ -66,8 +66,8 @@ Free プランで割り当てられる `e2-small`（0.5 vCPU）は GCP の共有
 
 今回は以下の 2 つのサービスを Rivet アクターとして実装しました。
 
-1. `rivet-image-optimization`: URL 指定された画像を取得し、WASM で AVIF / WebP / JPEG にリサイズ・軽量化して SQLite に永続キャッシュするアクター。
-2. `rivet-ogp`: Hono JSX で 1200×630 のリッチなカードを構築し、UnoCSS / Tailwind の動的 CSS 生成、Mermaid ダイアグラム描画、CSS 縦書きバッジを組み合わせて WASM で PNG レンダリングする OGP 生成アクター。
+1. [rivet-image-optimization](https://github.com/SoraKumo001/wasm-html-to-image-samples/tree/master/rivet-image-optimization): URL 指定された画像を取得し、WASM で AVIF / WebP / JPEG にリサイズ・軽量化して SQLite に永続キャッシュするアクター。
+2. [rivet-ogp](https://github.com/SoraKumo001/wasm-html-to-image-samples/tree/master/rivet-ogp): Hono JSX で 1200×630 のリッチなカードを構築し、UnoCSS / Tailwind の動的 CSS 生成、Mermaid ダイアグラム描画、CSS 縦書きバッジを組み合わせて WASM で PNG レンダリングする OGP 生成アクター。
 
 ちなみに画像変換の実験では、6500*6500の画像出力に成功しました。4K画像レベルなら余裕です。
 
