@@ -1,5 +1,5 @@
 ---
-title: "Deno Deploy がサ終するので代替サービスを探した結果、Rivetに行き着いた"
+title: "Deno Deploy がサ終するので代替サービスを探した結果、Rivet に行き着いた"
 emoji: "🦀"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["rivet", "wasm", "cloudflare", "typescript", "ogp"]
