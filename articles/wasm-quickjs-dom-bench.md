@@ -1,5 +1,5 @@
 ---
-title: "vitest を jsdom から wasm-quickjs-dom に変えて、テストを高速化させる"
+title: "vitest を wasm の力で30% 速くする、jsdom から wasm-quickjs-dom に変えて高速化"
 emoji: "🌊"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["vitest", "react", "testing", "wasm", "typescript"]
