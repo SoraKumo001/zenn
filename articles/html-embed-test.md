@@ -1,25 +1,25 @@
 ---
-title: "HTMLとCSSで描いた図を記事に埋め込んでみた（html-embed 実験室）"
+title: "Zennの新機能、HTMLとCSSで描いた図を記事に埋め込んでみた（html-embed 実験室）"
 emoji: "🐥"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["zenn", "html", "css", "markdown", "ui"]
-published: false
+published: true
 ---
 
 # はじめに
 
-2026年11月11日、Zenn にコードブロックの言語名を `html-embed` にするだけで **HTML と CSS で描いた図をその場で記事に埋め込める機能（Beta）** が追加されました。
+2026年11月11日、Zenn にコードブロックの言語名を `html-embed` にするだけで HTML と CSS で描いた図をその場で記事に埋め込める機能（Beta）が追加されました。
 
 https://info.zenn.dev/2026-11-11-html-embed
 
 これまで Zenn の記事に図を入れるときは、「Figma や Excalidraw で画像を作ってアップロードする」か「Mermaid（`mermaid` コードブロック）で書く」のが定番でした。しかし、それぞれ以下のような悩みがありました。
 
-- **画像アップロード**: デザインの自由度は高いものの、後から文言を1文字直すだけでも画像を作り直す必要があり、Git で差分管理しにくい。また、ダークモード切り替えにも追従しづらい。
-- **Mermaid**: テキストで管理できるものの、レイアウトの微調整や細かな色分け、アニメーション、リッチな表組みなどの表現力に限界がある。
+- 画像アップロード: デザインの自由度は高いものの、後から文言を1文字直すだけでも画像を作り直す必要があり、Git で差分管理しにくい。また、ダークモード切り替えにも追従しづらい。
+- Mermaid: テキストで管理できるものの、レイアウトの微調整や細かな色分け、アニメーション、リッチな表組みなどの表現力に限界がある。
 
-今回追加された `html-embed` を使えば、**テキスト（Markdown）のまま Git で管理でき、かつ HTML / CSS / インライン SVG の表現力をフル活用した図解** を記事内に直接レンダリングできます。
+今回追加された `html-embed` を使えば、テキスト（Markdown）のまま Git で管理でき、HTML / CSS / インライン SVG の表現力を活かした図解を記事内に直接レンダリングできます。
 
-本記事では、[公式のお知らせ](https://info.zenn.dev/2026-11-11-html-embed) と [Zenn の Markdown 記法一覧](https://zenn.dev/zenn/articles/markdown-guide) の仕様を確認しつつ、どこまでリッチな図解やインタラクションが作れるのか実際に埋め込んで実験してみます。
+本記事では、各実験でどのような HTML と CSS を使って図を構築しているのかが具体的にわかるよう、埋め込み結果の下にソースコードを掲載しながら解説していきます。
 
 ---
 
@@ -29,29 +29,29 @@ https://info.zenn.dev/2026-11-11-html-embed
 
 | 項目 | 仕様・制限の内容 |
 | :--- | :--- |
-| **基本の書き方** | ```` ```html-embed ```` の中に HTML と `<style>` を書く（`<html>`・`<head>`・`<body>` は不要） |
-| **サイズ・高さ上限** | 1ブロックあたり **50KB 以内**、表示される高さは **最大 500px**（超過分は埋め込み内でスクロール） |
-| **表示幅の目安** | PC で約 **700px**、スマホで約 **340px**（`@media (max-width: 640px)` 等でレスポンシブ対応推奨） |
-| **JavaScript** | **実行不可**（`<script>` や `onclick` 等のイベントハンドラは使えない） |
-| **リンク・外部リソース** | `<a>` によるページ移動不可（文字として表示）。外部 CSS（`<link>` / `@import`）、Web フォント、`<iframe>` も不可 |
-| **画像** | インライン SVG、画像 URL、`data:` URI の画像が使用可能（意味のある画像は背景ではなく `<img alt="...">` を使う） |
-| **フォーム要素** | `<form>`・`<button>`・`<textarea>`・`<select>`・文字入力 `<input>` は非表示。**ただし `type="checkbox"` と `type="radio"` の `<input>` は使用可能！** |
-| **ダークモード判定** | ダークモード時は埋め込みの `<html>` に `data-theme="dark"` が付与される（`[data-theme="dark"]`、`light-dark()`、`<style data-theme="dark">` で分岐可能） |
+| 基本の書き方 | ```` ```html-embed ```` の中に HTML と `<style>` を書く（`<html>`・`<head>`・`<body>` は不要） |
+| サイズ・高さ上限 | 1ブロックあたり 50KB 以内、表示される高さは最大 500px（超過分は埋め込み内でスクロール） |
+| 表示幅の目安 | PC で約 700px、スマホで約 340px（`@media (max-width: 640px)` 等でレスポンシブ対応推奨） |
+| JavaScript | 実行不可（`<script>` や `onclick` 等のイベントハンドラは使えない） |
+| リンク・外部リソース | `<a>` によるページ移動不可（文字として表示）。外部 CSS（`<link>` / `@import`）、Web フォント、`<iframe>` も不可 |
+| 画像 | インライン SVG、画像 URL、`data:` URI の画像が使用可能（意味のある画像は背景ではなく `<img alt="...">` を使う） |
+| フォーム要素 | `<form>`・`<button>`・`<textarea>`・`<select>`・文字入力 `<input>` は非表示。ただし `type="checkbox"` と `type="radio"` の `<input>` は使用可能 |
+| ダークモード判定 | ダークモード時は埋め込みの `<html>` に `data-theme="dark"` が付与される（`[data-theme="dark"]`、`light-dark()`、`<style data-theme="dark">` で分岐可能） |
 
-特に注目したいのが、**「JavaScript や `<button>` は使えないが、`input[type="radio"]` と `input[type="checkbox"]` は `:checked` 用に許可されている」** という点です。これを使えば、JS なしでもタブ切り替えや状態比較ができるインタラクティブな図解が作れます。
-
-それでは、順番に埋め込み実験をしていきましょう。
+特に面白いのが、JavaScript や `<button>` は使えないものの、`input[type="radio"]` と `input[type="checkbox"]` は `:checked` 用に許可されている点です。これを使えば、JS なしでもタブ切り替えや状態比較ができるインタラクティブな図解が作れます。
 
 ---
 
 # 実験 1：ダークモード＆レスポンシブ対応のステップフロー図
 
-まずは基本となるフロー図です。Zenn の読者はライトモード・ダークモードのどちらで読んでいるか分からないため、CSS カスタムプロパティ（変数）と `[data-theme="dark"]` を使って両対応させてみます。
+まずは基本となるフロー図です。CSS カスタムプロパティ（変数）と `[data-theme="dark"]` を使ってライト・ダーク両テーマに対応させ、幅 640px 以下で矢印と並び順を縦向きに切り替えています。
+
+### 埋め込み表示結果
 
 ```html-embed
 <div class="exp1-wrap">
   <div class="exp1-header">
-    <span class="exp1-badge"> HTML / CSS Pipeline</span>
+    <span class="exp1-badge">HTML / CSS Pipeline</span>
     <span class="exp1-title">リクエストからレスポンスまでの処理フロー</span>
   </div>
   <div class="exp1-steps">
@@ -201,7 +201,8 @@ https://info.zenn.dev/2026-11-11-html-embed
 </style>
 ```
 
-:::details 実験1のコードを見る
+### 使用した HTML 構造
+
 ```html
 <div class="exp1-wrap">
   <div class="exp1-header">
@@ -232,17 +233,62 @@ https://info.zenn.dev/2026-11-11-html-embed
   </div>
 </div>
 ```
-:::
 
-Mermaid だとノードの中に「ステップ番号・見出し・説明文・レイテンシのピルバッジ」をきれいに配置するのは難しいですが、Flexbox なら通常の Web コーディングと同じ感覚でレイアウトできます。
+:::details CSS スタイルを見る
+```css
+.exp1-wrap {
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text-main: #0f172a;
+  --text-sub: #475569;
+  --border: #e2e8f0;
+  --accent: #3ea8ff;
+  --accent-soft: #e0f2fe;
+  --accent-text: #0369a1;
+  padding: 20px;
+  background: var(--bg);
+  color: var(--text-main);
+  border-radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  box-sizing: border-box;
+}
+[data-theme="dark"] .exp1-wrap {
+  --bg: #0f172a;
+  --card-bg: #1e293b;
+  --text-main: #f1f5f9;
+  --text-sub: #94a3b8;
+  --border: #334155;
+  --accent: #38bdf8;
+  --accent-soft: #0c4a6e;
+  --accent-text: #7dd3fc;
+}
+.exp1-steps {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 8px;
+}
+.exp1-arrow::before {
+  content: "→";
+}
+@media (max-width: 640px) {
+  .exp1-steps {
+    flex-direction: column;
+  }
+  .exp1-arrow::before {
+    content: "↓";
+  }
+}
+```
+:::
 
 ---
 
 # 実験 2：CSS アニメーション＋インライン SVG で「パケットが流れる構成図」
 
-次に、[リリース記事のサンプル](https://info.zenn.dev/2026-11-11-html-embed) でも披露されていた **CSS `@keyframes` によるパケットのアニメーション** と **インライン SVG アイコン** を組み合わせたシステム構成図を作ってみます。
+外部画像 URL を使わずにインライン `<svg>` でベクターアイコンを描き、CSS `@keyframes` で光の粒（パケット）が伝播していくアニメーションを実装しています。
 
-外部画像 URL を用意しなくても、インライン `<svg>` を書けば好きなアイコンを劣化なしで埋め込めます。
+### 埋め込み表示結果
 
 ```html-embed
 <div class="exp2-arch">
@@ -480,20 +526,103 @@ Mermaid だとノードの中に「ステップ番号・見出し・説明文・
 </style>
 ```
 
-:::details 実験2のポイントとコードを見る
-- `animation-delay` をノードと矢印（`.exp2-edge i`）に少しずつずらして設定することで、左から順番にパケットが伝播してノードが光る動きを CSS だけで作っています。
-- OS の視覚効果軽減設定を有効にしている読者のため、`@media (prefers-reduced-motion: reduce)` でアニメーションを停止しています。
-- スマホ幅（`max-width: 640px`）では縦並びになり、パケットの移動アニメーションも `exp2-run-x`（横移動）から `exp2-run-y`（縦移動）に切り替わります。
+### 使用した HTML 構造
+
+```html
+<div class="exp2-arch">
+  <div class="exp2-title">イベント駆動マイクロサービスのデータフロー（リアルタイムアニメーション）</div>
+  <div class="exp2-flow">
+    <!-- Web Client -->
+    <div class="exp2-node exp2-n1">
+      <svg class="exp2-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="12" rx="2"/>
+        <path d="M2 20h20M12 16v4"/>
+      </svg>
+      <div class="exp2-label">Web Client</div>
+      <div class="exp2-sub">HTTPS POST</div>
+    </div>
+
+    <!-- 矢印 + 光の粒 <i> -->
+    <div class="exp2-edge exp2-e1" aria-hidden="true"><i></i></div>
+
+    <!-- API Gateway -->
+    <div class="exp2-node exp2-n2">
+      <svg class="exp2-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+      <div class="exp2-label">API Gateway</div>
+      <div class="exp2-sub">Rate Limit / Auth</div>
+    </div>
+
+    <div class="exp2-edge exp2-e2" aria-hidden="true"><i></i></div>
+
+    <!-- クラスター囲み枠 -->
+    <div class="exp2-cluster">
+      <div class="exp2-cluster-head">Async Worker Cluster</div>
+      <div class="exp2-cluster-body">
+        <div class="exp2-node exp2-n3">
+          <svg class="exp2-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+          <div class="exp2-label">Queue</div>
+          <div class="exp2-sub">Pub/Sub</div>
+        </div>
+
+        <div class="exp2-edge exp2-e3" aria-hidden="true"><i></i></div>
+
+        <div class="exp2-node exp2-n4">
+          <svg class="exp2-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+          </svg>
+          <div class="exp2-label">Analytics DB</div>
+          <div class="exp2-sub">Batch Insert</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+:::details アニメーション制御の CSS を見る
+```css
+/* 矢印ライン */
+.exp2-edge {
+  position: relative;
+  width: 34px;
+  height: 2px;
+  background: var(--line);
+}
+/* 光の粒 */
+.exp2-edge i {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 6px 3px var(--line);
+  animation: exp2-run-x 3.6s infinite;
+}
+/* 左から順番に遅延実行 */
+.exp2-n1 { animation-delay: 0s; }
+.exp2-e1 i { animation-delay: 0.3s; }
+.exp2-n2 { animation-delay: 0.9s; }
+.exp2-e2 i { animation-delay: 1.2s; }
+.exp2-n3 { animation-delay: 1.8s; }
+.exp2-e3 i { animation-delay: 2.1s; }
+.exp2-n4 { animation-delay: 2.7s; }
+```
 :::
 
 ---
 
 # 実験 3：JavaScript なし！`<input type="radio">` + `:checked` で動くインタラクティブ・タブ図解
 
-ここからが `html-embed` の面白い実験です。
-`html-embed` では `<script>` や `<button>` は無効化されますが、**`<input type="radio">` と `<input type="checkbox">` は利用可能** です。
+`html-embed` では `<script>` は動きませんが、`<input type="radio">` と `<label>` を組み合わせることで JS ゼロのタブ切り替え図解を実現できます。タブをクリックして表示が切り替わることを確認できます。
 
-これを利用して、上のタブをクリックすると **「CSR / SSR / SSG のアーキテクチャ図とメリデメ」がその場で切り替わるインタラクティブ図解** を埋め込んでみます。実際に下のタブをクリックしてみてください。
+### 埋め込み表示結果
 
 ```html-embed
 <div class="exp3-tabs">
@@ -704,20 +833,59 @@ Mermaid だとノードの中に「ステップ番号・見出し・説明文・
 </style>
 ```
 
-:::details 実験3の仕組み（CSS `:checked` と一般兄弟結合子 `~`）
-ラジオボタン `<input type="radio" id="tab-ssr" name="render-mode">` をコンテナ直下に置き、CSS の `#tab-ssr:checked ~ .exp3-panel-ssr { display: block; }` で表示パネルを切り替えています。
+### 使用した HTML 構造
 
-これまでは比較図を3枚縦に並べて記事が長くなりがちでしたが、`html-embed` のラジオボタン活用パターンを使えば、**1つの図の中で読者が好きなパターンを切り替えながら比較** できます。
+```html
+<div class="exp3-tabs">
+  <!-- 状態を保持する非表示のラジオボタン群 -->
+  <input type="radio" name="render-mode" id="tab-ssr" checked>
+  <input type="radio" name="render-mode" id="tab-csr">
+  <input type="radio" name="render-mode" id="tab-ssg">
+
+  <!-- クリック可能なタブナビゲーション (<label>) -->
+  <div class="exp3-nav" role="tablist">
+    <label for="tab-ssr" class="exp3-tab-label">SSR (Server-Side Rendering)</label>
+    <label for="tab-csr" class="exp3-tab-label">CSR (Client-Side Rendering)</label>
+    <label for="tab-ssg" class="exp3-tab-label">SSG (Static Site Generation)</label>
+  </div>
+
+  <!-- 各タブに対応するパネル -->
+  <div class="exp3-panel exp3-panel-ssr">...</div>
+  <div class="exp3-panel exp3-panel-csr">...</div>
+  <div class="exp3-panel exp3-panel-ssg">...</div>
+</div>
+```
+
+:::details 切り替えの CSS テクニック
+```css
+/* ラジオボタン自体は画面から隠す */
+.exp3-tabs > input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 選択されたタブのラベルスタイル */
+#tab-ssr:checked ~ .exp3-nav label[for="tab-ssr"] {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+/* 選択されたラジオボタンと一致するパネルだけを表示 */
+.exp3-panel { display: none; }
+#tab-ssr:checked ~ .exp3-panel-ssr { display: block; }
+#tab-csr:checked ~ .exp3-panel-csr { display: block; }
+#tab-ssg:checked ~ .exp3-panel-ssg { display: block; }
+```
 :::
 
 ---
 
-# 実験 4：`<input type="checkbox">` トグルスイッチで「障害発生時のフェイルオーバー経路」をシミュレートする
+# 実験 4：`<input type="checkbox">` トグルスイッチで「障害時のフェイルオーバー経路」をシミュレートする
 
-続いて、`input[type="checkbox"]` を使った実験です。
-平常時のルーティングと、プライマリ DB 障害時のフェイルオーバー経路を **チェックボックスの ON / OFF トグルスイッチでリアルタイムに切り替えられる構成図** を作ってみます。
+`<input type="checkbox">` の ON / OFF をスイッチ UI として装飾し、平常時と DB 障害時のルーティング切替をシミュレートします。
 
-右上の **「Primary 障害をシミュレート」** スイッチをクリックして切り替えてみてください。
+### 埋め込み表示結果
 
 ```html-embed
 <div class="exp4-sim">
@@ -1016,15 +1184,81 @@ Mermaid だとノードの中に「ステップ番号・見出し・説明文・
 </style>
 ```
 
-インフラ構成やネットワーク経路の記事を書くとき、「平常時」と「障害時」で2枚の画像を用意する代わりに、このようにスイッチ1つで状態変化を確認できる図を置くと、読者の理解がぐっと深まりそうです。
+### 使用した HTML 構造
+
+```html
+<div class="exp4-sim">
+  <!-- 状態を保持するチェックボックス -->
+  <input type="checkbox" id="failover-toggle">
+
+  <div class="exp4-toolbar">
+    <div class="exp4-status">
+      <span class="exp4-dot"></span>
+      <span class="exp4-status-normal">現在: 平常運転（Primary DB へ接続中）</span>
+      <span class="exp4-status-fail">現在: フェイルオーバー発動！（Standby DB へ昇格・切替中）</span>
+    </div>
+
+    <!-- スイッチ風に装飾する label -->
+    <label for="failover-toggle" class="exp4-switch">
+      <span class="exp4-switch-track"><span class="exp4-switch-thumb"></span></span>
+      <span class="exp4-switch-text">Primary 障害をシミュレート</span>
+    </label>
+  </div>
+
+  <div class="exp4-grid">
+    <div class="exp4-app">
+      <div class="exp4-box-title">Application Pool</div>
+      <div class="exp4-box-sub">Connection Router</div>
+    </div>
+
+    <div class="exp4-routes">
+      <!-- 通常系 (Primary) ルート -->
+      <div class="exp4-route exp4-route-pri">
+        <div class="exp4-line exp4-line-pri">
+          <span class="exp4-label-active">Read / Write (Active)</span>
+          <span class="exp4-label-down">✕ Connection Timeout</span>
+        </div>
+        <div class="exp4-db exp4-db-pri">...</div>
+      </div>
+
+      <!-- 待機系 (Standby) ルート -->
+      <div class="exp4-route exp4-route-std">
+        <div class="exp4-line exp4-line-std">
+          <span class="exp4-label-idle">Sync Replication (Standby)</span>
+          <span class="exp4-label-promoted">⚡ Promoted! Read / Write</span>
+        </div>
+        <div class="exp4-db exp4-db-std">...</div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+:::details トグル切替時の CSS 挙動
+```css
+/* チェックボックスの ON 時、平常テキストを非表示にして障害時テキストを表示 */
+#failover-toggle:checked ~ .exp4-toolbar .exp4-status-normal { display: none; }
+#failover-toggle:checked ~ .exp4-toolbar .exp4-status-fail { display: inline; }
+
+/* トグルスイッチのつまみを右に移動し背景色を赤へ */
+#failover-toggle:checked ~ .exp4-toolbar .exp4-switch-track { background: #ef4444; }
+#failover-toggle:checked ~ .exp4-toolbar .exp4-switch-thumb { transform: translateX(16px); }
+
+/* Standby DB のボーダーをアクティブ色に変更 */
+#failover-toggle:checked ~ .exp4-grid .exp4-db-std {
+  border: 2px solid var(--ok);
+  box-shadow: 0 0 0 3px var(--ok-bg);
+}
+```
+:::
 
 ---
 
 # 実験 5：Markdown テーブルでは表現できない「棒グラフ＆バッジ付きベンチマーク比較表」
 
-通常の Markdown テーブルはテキストしか入れられませんが、`html-embed` なら **セル内に横棒グラフ（バーチャート）や倍率バッジを組み込んだ視覚的なベンチマーク表** をそのまま埋め込めます。
+通常の Markdown テーブルでは入れられない横棒グラフ（バーチャート）やハイライトバッジを組み込み、視覚的に結果がわかるベンチマーク表を作っています。
 
-以前執筆した [Vitest の DOM 環境ベンチマーク記事](https://zenn.dev/sorakumo001/articles/wasm-quickjs-dom-bench) の計測データを、`html-embed` のリッチテーブルで表現してみます。
+### 埋め込み表示結果
 
 ```html-embed
 <div class="exp5-bench">
@@ -1233,7 +1467,63 @@ Mermaid だとノードの中に「ステップ番号・見出し・説明文・
 </style>
 ```
 
-数値だけの表よりも、どれだけ差があるのか一目で直感的に伝わります。`font-variant-numeric: tabular-nums;` を指定して数値の桁揃えができるのも CSS ならではの強みです。
+### 使用した HTML 構造
+
+```html
+<div class="exp5-bench">
+  <div class="exp5-head">
+    <div class="exp5-title">Vitest DOM 環境の実行時間比較（短いほど高速）</div>
+    <div class="exp5-legend">
+      <span class="exp5-leg-item"><i class="exp5-dot-jsdom"></i>jsdom (31.0.0)</span>
+      <span class="exp5-leg-item"><i class="exp5-dot-wasm"></i>wasm-quickjs-dom (1.0.17)</span>
+    </div>
+  </div>
+
+  <div class="exp5-rows">
+    <div class="exp5-row">
+      <div class="exp5-metric-info">
+        <span class="exp5-metric-name">1ファイルあたりの環境起動コスト</span>
+        <span class="exp5-speedup">約 6.1 倍高速</span>
+      </div>
+      <div class="exp5-bars">
+        <div class="exp5-bar-line">
+          <span class="exp5-env">jsdom</span>
+          <div class="exp5-track"><div class="exp5-fill exp5-fill-jsdom" style="width: 100%;"></div></div>
+          <span class="exp5-val">1,151.1 ms</span>
+        </div>
+        <div class="exp5-bar-line">
+          <span class="exp5-env">wasm</span>
+          <div class="exp5-track"><div class="exp5-fill exp5-fill-wasm" style="width: 16.3%;"></div></div>
+          <span class="exp5-val exp5-val-win">187.3 ms</span>
+        </div>
+      </div>
+    </div>
+    <!-- 他のメトリクス行も同様の構成 -->
+  </div>
+</div>
+```
+
+:::details CSS スタイルを見る
+```css
+/* 棒グラフのレールとバー */
+.exp5-track {
+  flex: 1;
+  height: 12px;
+  background: var(--track);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.exp5-fill-wasm {
+  background: linear-gradient(90deg, #3ea8ff, #2563eb);
+}
+/* 数値の桁幅を揃える */
+.exp5-val {
+  width: 82px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+```
+:::
 
 ---
 
@@ -1243,33 +1533,33 @@ Mermaid だとノードの中に「ステップ番号・見出し・説明文・
 
 ## 1. ダークモード対応は「CSS変数」または `light-dark()` が快適
 
-[Zenn の Markdown 記法一覧](https://zenn.dev/zenn/articles/markdown-guide) によると、ダークモード時の切り替え方法は次の 3 通りがサポートされています。
+Zenn の Markdown 記法一覧によると、ダークモード時の切り替え方法は次の 3 通りがサポートされています。
 
-1. **`[data-theme="dark"]` セレクタで切り替える**
-2. **CSS の `light-dark()` 関数で切り替える**（例：`background: light-dark(#eaf6ff, #1a2f3f);`）
-3. **テーマごとの `<style>` タグを書く**（`<style data-theme="light">` と `<style data-theme="dark">`）
+1. `[data-theme="dark"]` セレクタで切り替える
+2. CSS の `light-dark()` 関数で切り替える（例：`background: light-dark(#eaf6ff, #1a2f3f);`）
+3. テーマごとの `<style>` タグを書く（`<style data-theme="light">` と `<style data-theme="dark">`）
 
 要素数が多い図解では、ルート要素に `--bg`, `--card`, `--text`, `--border` などの CSS カスタムプロパティを定義しておき、`[data-theme="dark"]` で変数だけ上書きするパターンが一番見通しよく書けました。
 
 ## 2. 高さ 500px 制限とスマホ幅（約340px）の意識
 
-`html-embed` の表示領域は **高さ最大 500px** です。PC 幅（約 700px）では横に並べられて高さ 200px 程度で収まっていても、`@media (max-width: 640px)` で縦積みにしたときに高さが 500px を超えると、埋め込みフレーム内で縦スクロールが発生します。
+`html-embed` の表示領域は高さ最大 500px です。PC 幅（約 700px）では横に並べられて高さ 200px 程度で収まっていても、`@media (max-width: 640px)` で縦積みにしたときに高さが 500px を超えると、埋め込みフレーム内で縦スクロールが発生します。
 
-そのため、スマホ幅のメディアクエリでは単に `flex-direction: column` にするだけでなく、**パディングや最小高さ（`min-height`）をコンパクトに詰めるスタイル** をセットで書いておくと、スマホでもスクロールなしで綺麗に収まります。
+そのため、スマホ幅のメディアクエリでは単に `flex-direction: column` にするだけでなく、パディングや最小高さ（`min-height`）をコンパクトに詰めるスタイルをセットで書いておくと、スマホでもスクロールなしで綺麗に収まります。
 
 ## 3. JS なしでも `:checked`・`:hover`・`<details>` で十分な表現力がある
 
-セキュリティのため JavaScript は動きませんが、記事内の図解としては以下の CSS 機能だけで驚くほど幅広い表現ができます。
+セキュリティのため JavaScript は動きませんが、記事内の図解としては以下の CSS 機能だけで幅広い表現ができます。
 
-- **タブ切り替え**: `<input type="radio">` + `:checked` + `<label>`
-- **状態トグル・比較**: `<input type="checkbox">` + `:checked` + `<label>`
-- **ツールチップ・補足表示**: `:hover` / `:focus-within` や `<details><summary>`
-- **データの流れの可視化**: `@keyframes` アニメーション（＋ `prefers-reduced-motion: reduce` への配慮）
+- タブ切り替え: `<input type="radio">` + `:checked` + `<label>`
+- 状態トグル・比較: `<input type="checkbox">` + `:checked` + `<label>`
+- ツールチップ・補足表示: `:hover` / `:focus-within` や `<details><summary>`
+- データの流れの可視化: `@keyframes` アニメーション（＋ `prefers-reduced-motion: reduce` への配慮）
 
 ---
 
 # まとめ
 
-`html-embed` のおかげで、「Mermaid では表現しきれないけれど、画像で作るとメンテナンスやダークモード対応が大変」という図解の悩みが一気に解消されそうです。
+`html-embed` のおかげで、「Mermaid では表現しきれないけれど、画像で作るとメンテナンスやダークモード対応が大変」という図解の悩みが解消されそうです。
 
-さらに、[公式のお知らせページ](https://info.zenn.dev/2026-11-11-html-embed) には **生成 AI に `html-embed` の作図を頼むための公式プロンプト** も用意されています。構造やデータの数値だけ伝えて AI にベースとなる HTML / CSS を出力してもらい、細部をテキストエディタで微調整するワークフローが今後の技術記事執筆の定番になりそうです。
+さらに、公式のお知らせページには生成 AI に `html-embed` の作図を頼むための公式プロンプトも用意されています。構造やデータの数値だけ伝えて AI にベースとなる HTML / CSS を出力してもらい、細部をテキストエディタで微調整するワークフローが今後の技術記事執筆の定番になりそうです。
