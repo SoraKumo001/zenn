@@ -3,7 +3,7 @@ title: "Cloudflare Workers のみで動作、kitesurf を使いブラウザレ�
 emoji: "💭"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["cloudflare", "cloudflareworkers", "kitesurf", "wasm", "cdp"]
-published: true
+published: false
 ---
 
 # はじめに
