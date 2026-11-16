@@ -3,7 +3,7 @@ title: "AIで小説を書くノベクリの技術解説"
 emoji: "🔥"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["ai", "llm", "rag", "typescript", "cloudflare"]
-published: false
+published: true
 ---
 
 「AI に小説を書かせる」と聞くと、プロンプトを 1 本投げて出力させるイメージを持つかもしれません。しかし実際に長編や意図通りの物語を書かせようとすると、文章のリズム、キャラクターの一貫性、伏線の管理、前後の文脈など、**素朴なプロンプトだけでは破綻するポイント**が次々と現れます。
